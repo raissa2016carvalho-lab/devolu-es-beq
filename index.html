@@ -238,10 +238,11 @@ async function iniciarApp(email) {
   document.getElementById('tela-login').style.display = 'none';
   // Verificar se já tem filial salva na sessão
   const filialSalva = sessionStorage.getItem('alm_filial');
-  if (filialSalva) {
-    userFilial = filialSalva;
+  if (filialSalva && filialSalva.trim()) {
+    userFilial = filialSalva.trim();
     abrirApp();
   } else {
+    sessionStorage.removeItem('alm_filial');
     document.getElementById('tela-filial').style.display = 'flex';
   }
 }
@@ -255,9 +256,11 @@ document.getElementById('btn-filial').addEventListener('click', () => {
   abrirApp();
 });
 
+const FILIAIS_NOMES = {'01':'MATRIZ','03':'PAU DOS FERROS','04':'ITAPIPOCA','06':'CURRAIS NOVOS','07':'SOBRAL','08':'APARECIDA DE GOIANIA','09':'MARACANAU','10':'MOSSORO','11':'ANAPOLIS','13':'ALAGOINHAS','14':'RIBEIRA DO POMBAL','15':'PAULO AFONSO','22':'GOIANIA','23':'BATURITE','24':'MORRINHOS','25':'CASCAVEL','27':'CAUCAIA','29':'HORIZONTE','34':'SENHOR DO BONFIM','36':'LUZIANIA','37':'DIVINOPOLIS','40':'GARANHUNS','41':'FLORIANO','42':'LIVRAMENTO DE NOSSA SENHORA','43':'HORTOLANDIA'};
+
 async function abrirApp() {
   document.getElementById('app').style.display = 'block';
-  const filialNome = document.getElementById('select-filial')?.options[document.getElementById('select-filial')?.selectedIndex]?.text || 'Filial ' + userFilial;
+  const filialNome = FILIAIS_NOMES[userFilial] || ('Filial ' + userFilial);
   document.getElementById('header-sub').textContent = userEmail + ' · ' + filialNome;
 
   // Data padrão = hoje
