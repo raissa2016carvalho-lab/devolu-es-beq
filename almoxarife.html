@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entregas do Dia — Almoxarifado</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,sans-serif;background:#f1f5f9;color:#0f172a;min-height:100vh}
+
+  /* LOGIN */
+  .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+  .login-card{background:#fff;border-radius:16px;padding:32px;width:100%;max-width:380px;box-shadow:0 4px 24px #00000010}
+  .login-logo{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+  .login-logo .ico{width:36px;height:36px;background:#0f172a;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px}
+  .login-logo .txt{font-size:15px;font-weight:700;color:#0f172a}
+  .login-logo .sub{font-size:11px;color:#64748b;margin-top:1px}
+  .login-card h2{font-size:18px;font-weight:700;margin-bottom:4px}
+  .login-card p{font-size:13px;color:#64748b;margin-bottom:20px}
+  label{display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:4px}
+  input{width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:9px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px}
+  input:focus{border-color:#0f172a}
+  .btn{width:100%;padding:12px;background:#0f172a;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+  .btn:hover{background:#1e293b}
+  .msg{font-size:13px;padding:10px 12px;border-radius:8px;margin-bottom:12px}
+  .erro{background:#fee2e2;color:#991b1b}
+
+  /* APP */
+  #app{display:none}
+  .header{background:#0f172a;color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .header-left{display:flex;align-items:center;gap:10px}
+  .header-ico{width:30px;height:30px;background:#1e293b;border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+  .header-title{font-size:14px;font-weight:700}
+  .header-sub{font-size:11px;color:#94a3b8;margin-top:1px}
+  .btn-sair{background:none;border:1px solid #334155;color:#94a3b8;border-radius:7px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+
+  .filtros{background:#fff;border-bottom:1px solid #e2e8f0;padding:12px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:57px;z-index:99}
+  .filtros input[type=date]{padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:0}
+  .filtros input[type=text]{flex:1;min-width:160px;padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:0}
+  .badge-count{background:#f1f5f9;border-radius:6px;padding:4px 10px;font-size:12px;color:#64748b;white-space:nowrap}
+  .badge-count b{color:#0f172a}
+
+  .corpo{padding:16px 20px;max-width:900px;margin:0 auto}
+
+  /* CARD DE ITEM */
+  .item-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden;transition:box-shadow .15s}
+  .item-card:hover{box-shadow:0 2px 12px #00000010}
+  .item-card.devolvido{border-left:4px solid #16a34a}
+  .item-card.nao_devolvido{border-left:4px solid #ef4444}
+  .item-card.pendente{border-left:4px solid #e2e8f0}
+
+  .item-body{padding:14px 16px;display:flex;align-items:flex-start;gap:12px}
+  .item-info{flex:1;min-width:0}
+  .item-desc{font-size:14px;font-weight:600;color:#0f172a;line-height:1.3}
+  .item-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .meta-tag{font-size:11.5px;color:#64748b;background:#f8fafc;border-radius:4px;padding:2px 7px}
+  .meta-tag b{color:#0f172a}
+
+  .item-acoes{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+  .btn-dev{width:40px;height:40px;border:none;border-radius:9px;cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .15s}
+  .btn-sim{background:#dcfce7;color:#16a34a}
+  .btn-sim:hover,.btn-sim.ativo{background:#16a34a;color:#fff}
+  .btn-nao{background:#fee2e2;color:#ef4444}
+  .btn-nao:hover,.btn-nao.ativo{background:#ef4444;color:#fff}
+
+  .obs-area{padding:0 16px 14px;display:none}
+  .obs-area.aberta{display:block}
+  .obs-area label{font-size:12px;font-weight:600;color:#ef4444;margin-bottom:4px}
+  .obs-area textarea{width:100%;padding:8px 10px;border:1px solid #fca5a5;border-radius:8px;font-size:13px;font-family:inherit;resize:none;height:72px;outline:none;margin-bottom:0}
+  .obs-area textarea:focus{border-color:#ef4444}
+  .btn-salvar-obs{margin-top:8px;background:#0f172a;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+
+  .status-pill{font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;white-space:nowrap}
+  .pill-dev{background:#dcfce7;color:#166534}
+  .pill-nao{background:#fee2e2;color:#991b1b}
+  .pill-pend{background:#f1f5f9;color:#64748b}
+
+  .vazio{text-align:center;padding:40px 20px;color:#94a3b8;font-size:14px}
+  .loading{text-align:center;padding:40px;color:#94a3b8}
+
+  /* RESUMO */
+  .resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+  .resumo-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center}
+  .resumo-num{font-size:24px;font-weight:800;line-height:1}
+  .resumo-label{font-size:11px;color:#64748b;margin-top:4px}
+  .num-verde{color:#16a34a}
+  .num-vermelha{color:#ef4444}
+  .num-cinza{color:#64748b}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="tela-login">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="ico">A</div>
+      <div>
+        <div class="txt">Almoxarifado</div>
+        <div class="sub">Controle de devoluções</div>
+      </div>
+    </div>
+    <h2>Entrar</h2>
+    <p>Acesse com seu e-mail e senha cadastrados.</p>
+    <div id="login-msg"></div>
+    <label>E-mail</label>
+    <input type="email" id="email" placeholder="seu@email.com">
+    <label>Senha</label>
+    <input type="password" id="senha" placeholder="••••••••">
+    <button class="btn" id="btn-login">Entrar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="header-ico">A</div>
+      <div>
+        <div class="header-title">Entregas do Dia</div>
+        <div class="header-sub" id="header-sub">Almoxarifado</div>
+      </div>
+    </div>
+    <button class="btn-sair" id="btn-sair">Sair</button>
+  </div>
+
+  <div class="filtros">
+    <input type="date" id="filtro-data">
+    <input type="text" id="filtro-busca" placeholder="🔍 Buscar por item ou funcionário...">
+    <div class="badge-count" id="badge-count"></div>
+  </div>
+
+  <div class="corpo">
+    <div class="resumo">
+      <div class="resumo-card">
+        <div class="resumo-num num-verde" id="count-dev">—</div>
+        <div class="resumo-label">Devolvidos</div>
+      </div>
+      <div class="resumo-card">
+        <div class="resumo-num num-vermelha" id="count-nao">—</div>
+        <div class="resumo-label">Não devolvidos</div>
+      </div>
+      <div class="resumo-card">
+        <div class="resumo-num num-cinza" id="count-pend">—</div>
+        <div class="resumo-label">Pendentes</div>
+      </div>
+    </div>
+    <div id="lista"><div class="loading">Carregando...</div></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://vvwtqbehfwrgcmbjdniu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2d3RxYmVoZndyZ2NtYmpkbml1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mjg3NTcsImV4cCI6MjA5NzEwNDc1N30.jHxva16Nae109RiWDlgl21saOJ6gBihstMmlKRRBXis';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let userEmail = '';
+let userFilial = '';
+let todasEntregas = [];
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+document.getElementById('btn-login').addEventListener('click', async () => {
+  const email = document.getElementById('email').value.trim();
+  const senha = document.getElementById('senha').value;
+  const msgEl = document.getElementById('login-msg');
+  msgEl.innerHTML = '';
+  if (!email || !senha) { msgEl.innerHTML = '<div class="msg erro">Preencha e-mail e senha.</div>'; return; }
+  document.getElementById('btn-login').textContent = 'Entrando...';
+  const { error } = await db.auth.signInWithPassword({ email, password: senha });
+  document.getElementById('btn-login').textContent = 'Entrar';
+  if (error) { msgEl.innerHTML = '<div class="msg erro">E-mail ou senha inválidos.</div>'; return; }
+  iniciarApp(email);
+});
+
+document.getElementById('senha').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btn-login').click();
+});
+
+document.getElementById('btn-sair').addEventListener('click', async () => {
+  await db.auth.signOut();
+  location.reload();
+});
+
+async function verificarSessao() {
+  const { data } = await db.auth.getSession();
+  if (data.session) iniciarApp(data.session.user.email);
+}
+
+async function iniciarApp(email) {
+  userEmail = email;
+  document.getElementById('tela-login').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  // Descobrir filial pelo e-mail (via gerentes_cc ou perfis)
+  const { data: perfil } = await db.from('perfis_usuario').select('filial,role').eq('email', email.toLowerCase()).maybeSingle();
+  userFilial = perfil?.filial || '';
+
+  document.getElementById('header-sub').textContent = email + (userFilial ? ' · Filial ' + userFilial : '');
+
+  // Data padrão = hoje
+  const hoje = new Date().toISOString().slice(0, 10);
+  document.getElementById('filtro-data').value = hoje;
+
+  await carregarEntregas();
+
+  document.getElementById('filtro-data').addEventListener('change', carregarEntregas);
+  document.getElementById('filtro-busca').addEventListener('input', filtrarLista);
+}
+
+async function carregarEntregas() {
+  document.getElementById('lista').innerHTML = '<div class="loading">Carregando...</div>';
+  const dataEl = document.getElementById('filtro-data').value;
+  const dataProtheus = dataEl.replace(/-/g, '');
+
+  let query = db.from('entregas_almoxarife')
+    .select('*')
+    .eq('emissao', dataProtheus)
+    .order('hora', { ascending: false });
+
+  if (userFilial) query = query.eq('filial', userFilial.padStart(2, '0'));
+
+  const { data, error } = await query;
+  if (error) { document.getElementById('lista').innerHTML = '<div class="vazio">Erro ao carregar.</div>'; return; }
+
+  todasEntregas = data || [];
+  filtrarLista();
+}
+
+function filtrarLista() {
+  const busca = (document.getElementById('filtro-busca').value || '').toLowerCase();
+  const visiveis = busca
+    ? todasEntregas.filter(e =>
+        (e.descricao || '').toLowerCase().includes(busca) ||
+        (e.solicitante || '').toLowerCase().includes(busca) ||
+        (e.matricula || '').includes(busca) ||
+        (e.produto || '').includes(busca)
+      )
+    : todasEntregas;
+  renderLista(visiveis);
+}
+
+function fmtData(str) {
+  if (!str || str.length < 8) return str;
+  return str.slice(6,8) + '/' + str.slice(4,6) + '/' + str.slice(0,4);
+}
+
+function renderLista(entregas) {
+  const dev = entregas.filter(e => e.status === 'devolvido').length;
+  const nao = entregas.filter(e => e.status === 'nao_devolvido').length;
+  const pend = entregas.filter(e => e.status === 'pendente').length;
+
+  document.getElementById('count-dev').textContent = dev;
+  document.getElementById('count-nao').textContent = nao;
+  document.getElementById('count-pend').textContent = pend;
+  document.getElementById('badge-count').innerHTML = '<b>' + entregas.length + '</b> entrega(s)';
+
+  if (!entregas.length) {
+    document.getElementById('lista').innerHTML = '<div class="vazio">Nenhuma entrega encontrada para esta data.</div>';
+    return;
+  }
+
+  document.getElementById('lista').innerHTML = entregas.map(e => {
+    const statusClass = e.status || 'pendente';
+    const pillHtml = statusClass === 'devolvido'
+      ? '<span class="status-pill pill-dev">✓ Devolvido</span>'
+      : statusClass === 'nao_devolvido'
+      ? '<span class="status-pill pill-nao">✗ Não devolvido</span>'
+      : '<span class="status-pill pill-pend">Pendente</span>';
+
+    const obsAberta = statusClass === 'nao_devolvido' ? 'aberta' : '';
+
+    return `
+    <div class="item-card ${statusClass}" id="card-${e.id}">
+      <div class="item-body">
+        <div class="item-info">
+          <div class="item-desc">${e.descricao || e.produto}</div>
+          <div class="item-meta">
+            <span class="meta-tag">📦 <b>${e.quantidade}</b> un.</span>
+            <span class="meta-tag">👤 ${e.solicitante || '—'} ${e.matricula ? '· mat. '+e.matricula : ''}</span>
+            <span class="meta-tag">🕐 ${e.hora || '—'}</span>
+            <span class="meta-tag">CC: ${e.cc || '—'}</span>
+            ${pillHtml}
+          </div>
+          ${e.observacao ? `<div style="margin-top:8px;font-size:12px;color:#64748b;font-style:italic">Obs: ${e.observacao}</div>` : ''}
+        </div>
+        <div class="item-acoes">
+          <button class="btn-dev btn-sim ${statusClass==='devolvido'?'ativo':''}"
+            onclick="marcar(${e.id},'devolvido')" title="Devolvido">✓</button>
+          <button class="btn-dev btn-nao ${statusClass==='nao_devolvido'?'ativo':''}"
+            onclick="abrirObs(${e.id})" title="Não devolvido">✗</button>
+        </div>
+      </div>
+      <div class="obs-area ${obsAberta}" id="obs-${e.id}">
+        <label>⚠ Motivo da não devolução (obrigatório)</label>
+        <textarea id="txt-${e.id}" placeholder="Ex.: item danificado, ainda em uso, perdido...">${e.observacao || ''}</textarea>
+        <button class="btn-salvar-obs" onclick="marcarNao(${e.id})">Salvar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function marcar(id, status) {
+  await db.from('entregas_almoxarife').update({
+    status,
+    observacao: null,
+    respondido_em: new Date().toISOString()
+  }).eq('id', id);
+
+  const idx = todasEntregas.findIndex(e => e.id === id);
+  if (idx >= 0) { todasEntregas[idx].status = status; todasEntregas[idx].observacao = null; }
+  filtrarLista();
+}
+
+function abrirObs(id) {
+  const obs = document.getElementById('obs-' + id);
+  if (obs) { obs.classList.add('aberta'); document.getElementById('txt-' + id)?.focus(); }
+}
+
+async function marcarNao(id) {
+  const obs = (document.getElementById('txt-' + id)?.value || '').trim();
+  if (!obs) { alert('Informe o motivo da não devolução.'); return; }
+  await db.from('entregas_almoxarife').update({
+    status: 'nao_devolvido',
+    observacao: obs,
+    respondido_em: new Date().toISOString()
+  }).eq('id', id);
+  const idx = todasEntregas.findIndex(e => e.id === id);
+  if (idx >= 0) { todasEntregas[idx].status = 'nao_devolvido'; todasEntregas[idx].observacao = obs; }
+  filtrarLista();
+}
+
+window.marcar = marcar;
+window.abrirObs = abrirObs;
+window.marcarNao = marcarNao;
+
+verificarSessao();
+</script>
+</body>
+</html>
