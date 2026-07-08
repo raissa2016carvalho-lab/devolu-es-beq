@@ -224,7 +224,6 @@ document.getElementById('senha').addEventListener('keydown', e => {
 
 document.getElementById('btn-sair').addEventListener('click', async () => {
   await db.auth.signOut();
-  sessionStorage.removeItem('alm_filial');
   location.reload();
 });
 
@@ -237,21 +236,13 @@ async function iniciarApp(email) {
   userEmail = email;
   document.getElementById('tela-login').style.display = 'none';
   // Verificar se já tem filial salva na sessão
-  const filialSalva = sessionStorage.getItem('alm_filial');
-  if (filialSalva && filialSalva.trim()) {
-    userFilial = filialSalva.trim();
-    abrirApp();
-  } else {
-    sessionStorage.removeItem('alm_filial');
-    document.getElementById('tela-filial').style.display = 'flex';
-  }
+  document.getElementById('tela-filial').style.display = 'flex';
 }
 
 document.getElementById('btn-filial').addEventListener('click', () => {
   const sel = document.getElementById('select-filial').value;
   if (!sel) { alert('Selecione uma filial.'); return; }
   userFilial = sel;
-  sessionStorage.setItem('alm_filial', sel);
   document.getElementById('tela-filial').style.display = 'none';
   abrirApp();
 });
