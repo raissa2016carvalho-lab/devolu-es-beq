@@ -76,6 +76,14 @@
   .pill-nao{background:#fee2e2;color:#991b1b}
   .pill-pend{background:#f1f5f9;color:#64748b}
 
+  .tbl-entregas{border-collapse:collapse;width:100%;font-size:13px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px #00000008}
+  .tbl-entregas th{text-align:left;background:#f8fafc;border-bottom:2px solid #e2e8f0;padding:9px 12px;font-size:11.5px;font-weight:600;color:#64748b}
+  .tbl-entregas td{padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+  .tbl-entregas tr.tr-dev td{background:#f0fdf4}
+  .tbl-entregas tr.tr-nao td{background:#fff5f5}
+  .tbl-entregas tr:hover td{background:#fafafa}
+  .tbl-entregas tr.tr-dev:hover td{background:#dcfce7}
+  .tbl-entregas tr.tr-nao:hover td{background:#fee2e2}
   .vazio{text-align:center;padding:40px 20px;color:#94a3b8;font-size:14px}
   .loading{text-align:center;padding:40px;color:#94a3b8}
 
@@ -322,44 +330,51 @@ function renderLista(entregas) {
     return;
   }
 
-  document.getElementById('lista').innerHTML = entregas.map(e => {
-    const statusClass = e.status || 'pendente';
-    const pillHtml = statusClass === 'devolvido'
-      ? '<span class="status-pill pill-dev">✓ Devolvido</span>'
-      : statusClass === 'nao_devolvido'
-      ? '<span class="status-pill pill-nao">✗ Não devolvido</span>'
+  // Tabela
+  let html = '<table class="tbl-entregas"><thead><tr>'
+    + '<th>Hora</th><th>Matrícula</th><th>Funcionário</th><th>Item</th>'
+    + '<th style="text-align:center">Qtd</th><th>CC</th>'
+    + '<th style="text-align:center">Status</th>'
+    + '<th style="text-align:center">Ação</th>'
+    + '</tr></thead><tbody>';
+
+  entregas.forEach(e => {
+    const st = e.status || 'pendente';
+    const trClass = st === 'devolvido' ? 'tr-dev' : st === 'nao_devolvido' ? 'tr-nao' : '';
+    const pillHtml = st === 'devolvido'
+      ? '<span class="status-pill pill-dev">✓ Dev.</span>'
+      : st === 'nao_devolvido'
+      ? '<span class="status-pill pill-nao">✗ Não dev.</span>'
       : '<span class="status-pill pill-pend">Pendente</span>';
 
-    const obsAberta = statusClass === 'nao_devolvido' ? 'aberta' : '';
+    html += '<tr class="' + trClass + '" id="card-' + e.id + '">'
+      + '<td style="white-space:nowrap;color:#64748b;font-size:12px">' + (e.hora||'—').slice(0,5) + '</td>'
+      + '<td style="font-family:ui-monospace,monospace;font-size:12px">' + (e.matricula||'—') + '</td>'
+      + '<td style="font-size:13px">' + (e.solicitante||'—') + '</td>'
+      + '<td><div style="font-size:13px;font-weight:500">' + (e.descricao||e.produto) + '</div>'
+      + (e.observacao ? '<div style="font-size:11px;color:#ef4444;font-style:italic">Obs: ' + e.observacao + '</div>' : '')
+      + '</td>'
+      + '<td style="text-align:center;font-family:ui-monospace,monospace;font-weight:700">' + (e.quantidade||0) + '</td>'
+      + '<td style="font-size:11px;color:#64748b">' + (e.cc||'—') + '</td>'
+      + '<td style="text-align:center">' + pillHtml + '</td>'
+      + '<td style="text-align:center;white-space:nowrap">'
+      + '<button class="btn-dev btn-sim ' + (st==='devolvido'?'ativo':'') + '" onclick="marcar(' + e.id + ','devolvido')" title="Devolvido">✓</button> '
+      + '<button class="btn-dev btn-nao ' + (st==='nao_devolvido'?'ativo':'') + '" onclick="abrirObs(' + e.id + ')" title="Não devolvido">✗</button>'
+      + '</td>'
+      + '</tr>';
 
-    return `
-    <div class="item-card ${statusClass}" id="card-${e.id}">
-      <div class="item-body">
-        <div class="item-info">
-          <div class="item-desc">${e.descricao || e.produto}</div>
-          <div class="item-meta">
-            <span class="meta-tag">📦 <b>${e.quantidade}</b> un.</span>
-            <span class="meta-tag">👤 ${e.solicitante || '—'} ${e.matricula ? '· mat. '+e.matricula : ''}</span>
-            <span class="meta-tag">🕐 ${e.hora || '—'}</span>
-            <span class="meta-tag">CC: ${e.cc || '—'}</span>
-            ${pillHtml}
-          </div>
-          ${e.observacao ? `<div style="margin-top:8px;font-size:12px;color:#64748b;font-style:italic">Obs: ${e.observacao}</div>` : ''}
-        </div>
-        <div class="item-acoes">
-          <button class="btn-dev btn-sim ${statusClass==='devolvido'?'ativo':''}"
-            onclick="marcar(${e.id},'devolvido')" title="Devolvido">✓</button>
-          <button class="btn-dev btn-nao ${statusClass==='nao_devolvido'?'ativo':''}"
-            onclick="abrirObs(${e.id})" title="Não devolvido">✗</button>
-        </div>
-      </div>
-      <div class="obs-area ${obsAberta}" id="obs-${e.id}">
-        <label>⚠ Motivo da não devolução (obrigatório)</label>
-        <textarea id="txt-${e.id}" placeholder="Ex.: item danificado, ainda em uso, perdido...">${e.observacao || ''}</textarea>
-        <button class="btn-salvar-obs" onclick="marcarNao(${e.id})">Salvar</button>
-      </div>
-    </div>`;
-  }).join('');
+    if (st === 'nao_devolvido' || e._obsAberta) {
+      html += '<tr id="obs-row-' + e.id + '"><td colspan="8" style="padding:0 12px 12px">'
+        + '<div style="background:#fff5f5;border-radius:8px;padding:10px;display:flex;gap:8px;align-items:flex-end">'
+        + '<div style="flex:1"><label style="font-size:11px;font-weight:600;color:#ef4444;display:block;margin-bottom:4px">⚠ Motivo da não devolução</label>'
+        + '<textarea id="txt-' + e.id + '" style="width:100%;padding:7px 10px;border:1px solid #fca5a5;border-radius:7px;font-size:13px;font-family:inherit;resize:none;height:60px;outline:none">' + (e.observacao||'') + '</textarea></div>'
+        + '<button class="btn-salvar-obs" onclick="marcarNao(' + e.id + ')">Salvar</button>'
+        + '</div></td></tr>';
+    }
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('lista').innerHTML = html;
 }
 
 async function marcar(id, status) {
@@ -375,8 +390,24 @@ async function marcar(id, status) {
 }
 
 function abrirObs(id) {
-  const obs = document.getElementById('obs-' + id);
-  if (obs) { obs.classList.add('aberta'); document.getElementById('txt-' + id)?.focus(); }
+  // Renderizar linha de obs se não existir
+  let obsRow = document.getElementById('obs-row-' + id);
+  if (!obsRow) {
+    const row = document.getElementById('card-' + id);
+    if (!row) return;
+    const tr = document.createElement('tr');
+    tr.id = 'obs-row-' + id;
+    tr.innerHTML = '<td colspan="8" style="padding:0 12px 12px">'
+      + '<div style="background:#fff5f5;border-radius:8px;padding:10px;display:flex;gap:8px;align-items:flex-end">'
+      + '<div style="flex:1"><label style="font-size:11px;font-weight:600;color:#ef4444;display:block;margin-bottom:4px">⚠ Motivo da não devolução</label>'
+      + '<textarea id="txt-' + id + '" style="width:100%;padding:7px 10px;border:1px solid #fca5a5;border-radius:7px;font-size:13px;font-family:inherit;resize:none;height:60px;outline:none" placeholder="Ex.: item danificado, ainda em uso, perdido..."></textarea></div>'
+      + '<button class="btn-salvar-obs" onclick="marcarNao(' + id + ')">Salvar</button>'
+      + '</div></td>';
+    row.insertAdjacentElement('afterend', tr);
+    obsRow = tr;
+  }
+  obsRow.style.display = '';
+  document.getElementById('txt-' + id)?.focus();
 }
 
 async function marcarNao(id) {
