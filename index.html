@@ -333,7 +333,7 @@ function renderLista(entregas) {
 
   // Tabela
   let html = '<table class="tbl-entregas"><thead><tr>'
-    + '<th>Hora</th><th>Matrícula</th><th>Funcionário</th><th>Item</th>'
+    + '<th>Hora</th><th>Matrícula</th><th>Nº SA</th><th>Item</th>'
     + '<th style="text-align:center">Qtd</th><th>CC</th>'
     + '<th style="text-align:center">Status</th>'
     + '<th style="text-align:center">Ação</th>'
@@ -351,7 +351,7 @@ function renderLista(entregas) {
     html += '<tr class="' + trClass + '" id="card-' + e.id + '">'
       + '<td style="white-space:nowrap;color:#64748b;font-size:12px">' + String(e.hora||'—').slice(0,5) + '</td>'
       + '<td style="font-family:ui-monospace,monospace;font-size:12px">' + (e.matricula||'—') + '</td>'
-      + '<td style="font-size:13px">' + (e.solicitante||'—') + '</td>'
+      + '<td style="font-size:13px">' + (e.sa||e.numero_sa||e.num_sa||'—') + '</td>'
       + '<td><div style="font-size:13px;font-weight:500">' + (e.descricao||e.produto) + '</div>'
       + (e.observacao ? '<div style="font-size:11px;color:#ef4444;font-style:italic">Obs: ' + e.observacao + '</div>' : '')
       + '</td>'
