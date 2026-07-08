@@ -278,12 +278,14 @@ async function carregarEntregas() {
   const dataEl = document.getElementById('filtro-data').value;
   const dataProtheus = dataEl.replace(/-/g, '');
 
+  const filialBusca = userFilial ? userFilial.padStart(2, '0') : '';
+  console.log('[debug] data:', dataProtheus, 'filial:', filialBusca);
   let query = db.from('entregas_almoxarife')
     .select('*')
     .eq('emissao', dataProtheus)
     .order('hora', { ascending: false });
 
-  if (userFilial) query = query.eq('filial', userFilial.padStart(2, '0'));
+  if (filialBusca) query = query.eq('filial', filialBusca);
 
   const { data, error } = await query;
   if (error) { document.getElementById('lista').innerHTML = '<div class="vazio">Erro ao carregar.</div>'; return; }
