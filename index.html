@@ -279,7 +279,11 @@ async function carregarEntregas() {
   if (filialBusca) query = query.eq('filial', filialBusca);
 
   const { data, error } = await query;
-  if (error) { document.getElementById('lista').innerHTML = '<div class="vazio">Erro ao carregar.</div>'; return; }
+  console.log('[debug] resultado:', data?.length, 'erro:', error?.message);
+  if (error) { 
+    document.getElementById('lista').innerHTML = '<div class="vazio">Erro: ' + error.message + '</div>'; 
+    return; 
+  }
 
   todasEntregas = data || [];
   filtrarLista();
