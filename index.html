@@ -112,6 +112,51 @@
   </div>
 </div>
 
+<!-- SELEÇÃO DE FILIAL -->
+<div class="login-wrap" id="tela-filial" style="display:none">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="ico">A</div>
+      <div>
+        <div class="txt">Almoxarifado</div>
+        <div class="sub">Controle de devoluções</div>
+      </div>
+    </div>
+    <h2>Qual é sua filial?</h2>
+    <p>Selecione a filial que você gerencia.</p>
+    <label>Filial</label>
+    <select id="select-filial" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:9px;font-size:14px;font-family:inherit;margin-bottom:14px;outline:none">
+      <option value="">Selecione...</option>
+      <option value="01">01 — MATRIZ</option>
+      <option value="03">03 — PAU DOS FERROS</option>
+      <option value="04">04 — ITAPIPOCA</option>
+      <option value="06">06 — CURRAIS NOVOS</option>
+      <option value="07">07 — SOBRAL</option>
+      <option value="08">08 — APARECIDA DE GOIANIA</option>
+      <option value="09">09 — MARACANAU</option>
+      <option value="10">10 — MOSSORO</option>
+      <option value="11">11 — ANAPOLIS</option>
+      <option value="13">13 — ALAGOINHAS</option>
+      <option value="14">14 — RIBEIRA DO POMBAL</option>
+      <option value="15">15 — PAULO AFONSO</option>
+      <option value="22">22 — GOIANIA</option>
+      <option value="23">23 — BATURITE</option>
+      <option value="24">24 — MORRINHOS</option>
+      <option value="25">25 — CASCAVEL</option>
+      <option value="27">27 — CAUCAIA</option>
+      <option value="29">29 — HORIZONTE</option>
+      <option value="34">34 — SENHOR DO BONFIM</option>
+      <option value="36">36 — LUZIANIA</option>
+      <option value="37">37 — DIVINOPOLIS</option>
+      <option value="40">40 — GARANHUNS</option>
+      <option value="41">41 — FLORIANO</option>
+      <option value="42">42 — LIVRAMENTO DE NOSSA SENHORA</option>
+      <option value="43">43 — HORTOLANDIA</option>
+    </select>
+    <button class="btn" id="btn-filial">Continuar</button>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="app">
   <div class="header">
@@ -179,6 +224,7 @@ document.getElementById('senha').addEventListener('keydown', e => {
 
 document.getElementById('btn-sair').addEventListener('click', async () => {
   await db.auth.signOut();
+  sessionStorage.removeItem('alm_filial');
   location.reload();
 });
 
@@ -190,13 +236,29 @@ async function verificarSessao() {
 async function iniciarApp(email) {
   userEmail = email;
   document.getElementById('tela-login').style.display = 'none';
+  // Verificar se já tem filial salva na sessão
+  const filialSalva = sessionStorage.getItem('alm_filial');
+  if (filialSalva) {
+    userFilial = filialSalva;
+    abrirApp();
+  } else {
+    document.getElementById('tela-filial').style.display = 'flex';
+  }
+}
+
+document.getElementById('btn-filial').addEventListener('click', () => {
+  const sel = document.getElementById('select-filial').value;
+  if (!sel) { alert('Selecione uma filial.'); return; }
+  userFilial = sel;
+  sessionStorage.setItem('alm_filial', sel);
+  document.getElementById('tela-filial').style.display = 'none';
+  abrirApp();
+});
+
+async function abrirApp() {
   document.getElementById('app').style.display = 'block';
-
-  // Descobrir filial pelo e-mail (via gerentes_cc ou perfis)
-  const { data: perfil } = await db.from('perfis_usuario').select('filial,role').eq('email', email.toLowerCase()).maybeSingle();
-  userFilial = perfil?.filial || '';
-
-  document.getElementById('header-sub').textContent = email + (userFilial ? ' · Filial ' + userFilial : '');
+  const filialNome = document.getElementById('select-filial')?.options[document.getElementById('select-filial')?.selectedIndex]?.text || 'Filial ' + userFilial;
+  document.getElementById('header-sub').textContent = userEmail + ' · ' + filialNome;
 
   // Data padrão = hoje
   const hoje = new Date().toISOString().slice(0, 10);
