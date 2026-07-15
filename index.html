@@ -15,56 +15,78 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f1f5f9;color:#0f
 .header-title{font-size:15px;font-weight:700}
 .header-sub{font-size:11px;color:#94a3b8;margin-top:1px}
 
-.corpo{padding:20px;max-width:500px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.corpo{padding:16px;max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 
 .card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px}
-
-/* FILIAL */
-.filial-label{font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;display:block}
-select{width:100%;padding:11px 12px;border:1px solid #e2e8f0;border-radius:9px;font-size:14px;font-family:inherit;outline:none;background:#fff;color:#0f172a;appearance:auto}
-select:focus{border-color:#0f172a}
-
-/* FOTO */
-.foto-area{border:2px dashed #cbd5e1;border-radius:12px;overflow:hidden;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;background:#f8fafc;transition:border-color .2s}
-.foto-area:hover{border-color:#94a3b8}
-.foto-area.tem-foto{border:2px solid #e2e8f0}
-.foto-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;color:#94a3b8;pointer-events:none}
-.foto-placeholder svg{width:40px;height:40px;opacity:.6}
-.foto-placeholder span{font-size:13px}
-.foto-preview{width:100%;height:100%;object-fit:cover;display:none}
-.foto-area.tem-foto .foto-preview{display:block}
-.foto-area.tem-foto .foto-placeholder{display:none}
-.btn-retake{position:absolute;bottom:10px;right:10px;background:#0f172a;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
-input[type=file]{display:none}
-
-/* CAMPOS */
 .campo-label{font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;display:block}
-input[type=text]{width:100%;padding:11px 12px;border:1px solid #e2e8f0;border-radius:9px;font-size:15px;font-family:inherit;outline:none;margin-bottom:0}
-input[type=text]:focus{border-color:#0f172a}
-input[type=text]::placeholder{color:#cbd5e1}
+input[type=text],input[type=number],select{width:100%;padding:11px 12px;border:1px solid #e2e8f0;border-radius:9px;font-size:15px;font-family:inherit;outline:none;background:#fff;color:#0f172a}
+input:focus,select:focus{border-color:#0f172a}
+input::placeholder{color:#cbd5e1}
 
-/* BTN SALVAR */
-.btn-salvar{width:100%;padding:15px;background:#0f172a;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
-.btn-salvar:hover{background:#1e293b}
-.btn-salvar:disabled{background:#94a3b8;cursor:not-allowed}
+/* ETAPAS */
+.etapa{display:none}
+.etapa.ativa{display:flex;flex-direction:column;gap:14px}
+
+/* CONTADOR */
+.contador-wrap{background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:16px;text-align:center}
+.contador-num{font-size:48px;font-weight:800;color:#0284c7;line-height:1}
+.contador-label{font-size:13px;color:#0369a1;margin-top:4px}
+.contador-sub{font-size:12px;color:#64748b;margin-top:8px}
+
+/* FOTOS GRID */
+.fotos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.foto-slot{aspect-ratio:1;border-radius:10px;overflow:hidden;position:relative;cursor:pointer}
+.foto-slot.vazio{border:2px dashed #cbd5e1;background:#f8fafc;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
+.foto-slot.vazio span{font-size:11px;color:#94a3b8}
+.foto-slot.vazio svg{opacity:.5}
+.foto-slot.preenchido{border:2px solid #16a34a}
+.foto-slot img{width:100%;height:100%;object-fit:cover}
+.foto-slot .btn-remover{position:absolute;top:4px;right:4px;width:20px;height:20px;background:#ef4444;border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.foto-slot.proxima{border:2px dashed #2563eb;background:#eff6ff;animation:pulsar 1.5s infinite}
+@keyframes pulsar{0%,100%{border-color:#2563eb}50%{border-color:#93c5fd}}
+
+/* PROGRESSO */
+.progresso-bar{background:#e2e8f0;border-radius:999px;height:8px;overflow:hidden;margin-top:4px}
+.progresso-fill{background:#16a34a;height:100%;border-radius:999px;transition:width .3s}
+.progresso-label{display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:4px}
+
+/* RESUMO SA */
+.resumo-sa{background:#f8fafc;border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.resumo-row{display:flex;justify-content:space-between;font-size:13px}
+.resumo-row span:first-child{color:#64748b}
+.resumo-row span:last-child{font-weight:600;color:#0f172a}
+.resumo-row.destaque span:last-child{color:#2563eb;font-size:15px;font-weight:800}
+
+/* BOTÕES */
+.btn-primary{width:100%;padding:14px;background:#0f172a;color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+.btn-primary:hover{background:#1e293b}
+.btn-primary:disabled{background:#94a3b8;cursor:not-allowed}
+.btn-secondary{width:100%;padding:12px;background:#fff;color:#0f172a;border:1px solid #e2e8f0;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-secondary:hover{background:#f8fafc;border-color:#cbd5e1}
+
+/* CAMPOS INLINE */
+.campos-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
 /* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
-.toast.erro{background:#dc2626}
 .toast.ok{background:#16a34a}
+.toast.erro{background:#dc2626}
 
 /* HISTÓRICO */
-.hist-title{font-size:13px;font-weight:700;color:#64748b;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
 .hist-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9}
 .hist-item:last-child{border-bottom:none}
-.hist-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;background:#f1f5f9;flex-shrink:0}
+.hist-fotos{display:flex;gap:4px}
+.hist-thumb{width:36px;height:36px;border-radius:6px;object-fit:cover}
 .hist-info{flex:1;min-width:0}
-.hist-sa{font-size:13px;font-weight:600;color:#0f172a}
-.hist-mat{font-size:12px;color:#64748b}
-.hist-filial{font-size:11px;color:#94a3b8}
+.hist-sa{font-size:13px;font-weight:600}
+.hist-det{font-size:11px;color:#64748b;margin-top:2px}
 .hist-hora{font-size:11px;color:#94a3b8;flex-shrink:0}
-.vazio-hist{text-align:center;padding:20px;color:#94a3b8;font-size:13px}
+.vazio{text-align:center;padding:20px;color:#94a3b8;font-size:13px}
+input[type=file]{display:none}
+
+.tag-consumo{background:#fef3c7;color:#92400e;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px}
+.tag-fotos{background:#dcfce7;color:#166534;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px}
 </style>
 </head>
 <body>
@@ -79,85 +101,127 @@ input[type=text]::placeholder{color:#cbd5e1}
 
 <div class="corpo">
 
-  <!-- FILIAL -->
-  <div class="card">
-    <label class="filial-label">Filial</label>
-    <select id="sel-filial">
-      <option value="">Selecione a filial...</option>
-      <option value="01">01 — MATRIZ</option>
-      <option value="03">03 — PAU DOS FERROS</option>
-      <option value="04">04 — ITAPIPOCA</option>
-      <option value="06">06 — CURRAIS NOVOS</option>
-      <option value="07">07 — SOBRAL</option>
-      <option value="08">08 — APARECIDA DE GOIANIA</option>
-      <option value="09">09 — MARACANAU</option>
-      <option value="10">10 — MOSSORO</option>
-      <option value="11">11 — ANAPOLIS</option>
-      <option value="13">13 — ALAGOINHAS</option>
-      <option value="14">14 — RIBEIRA DO POMBAL</option>
-      <option value="15">15 — PAULO AFONSO</option>
-      <option value="22">22 — GOIANIA</option>
-      <option value="23">23 — BATURITE</option>
-      <option value="24">24 — MORRINHOS</option>
-      <option value="25">25 — CASCAVEL</option>
-      <option value="27">27 — CAUCAIA</option>
-      <option value="29">29 — HORIZONTE</option>
-      <option value="34">34 — SENHOR DO BONFIM</option>
-      <option value="36">36 — LUZIANIA</option>
-      <option value="37">37 — DIVINOPOLIS</option>
-      <option value="40">40 — GARANHUNS</option>
-      <option value="41">41 — FLORIANO</option>
-      <option value="42">42 — LIVRAMENTO DE NOSSA SENHORA</option>
-      <option value="43">43 — HORTOLANDIA</option>
-    </select>
-  </div>
+  <!-- ETAPA 1: FILIAL + SA + CONTAGENS -->
+  <div class="etapa ativa" id="etapa-1">
+    <div class="card">
+      <label class="campo-label">Filial</label>
+      <select id="sel-filial">
+        <option value="">Selecione...</option>
+        <option value="01">01 — MATRIZ</option>
+        <option value="03">03 — PAU DOS FERROS</option>
+        <option value="04">04 — ITAPIPOCA</option>
+        <option value="06">06 — CURRAIS NOVOS</option>
+        <option value="07">07 — SOBRAL</option>
+        <option value="08">08 — APARECIDA DE GOIANIA</option>
+        <option value="09">09 — MARACANAU</option>
+        <option value="10">10 — MOSSORO</option>
+        <option value="11">11 — ANAPOLIS</option>
+        <option value="13">13 — ALAGOINHAS</option>
+        <option value="14">14 — RIBEIRA DO POMBAL</option>
+        <option value="15">15 — PAULO AFONSO</option>
+        <option value="22">22 — GOIANIA</option>
+        <option value="23">23 — BATURITE</option>
+        <option value="24">24 — MORRINHOS</option>
+        <option value="25">25 — CASCAVEL</option>
+        <option value="27">27 — CAUCAIA</option>
+        <option value="29">29 — HORIZONTE</option>
+        <option value="34">34 — SENHOR DO BONFIM</option>
+        <option value="36">36 — LUZIANIA</option>
+        <option value="37">37 — DIVINOPOLIS</option>
+        <option value="40">40 — GARANHUNS</option>
+        <option value="41">41 — FLORIANO</option>
+        <option value="42">42 — LIVRAMENTO DE NOSSA SENHORA</option>
+        <option value="43">43 — HORTOLANDIA</option>
+      </select>
+    </div>
 
-  <!-- FOTO -->
-  <div class="card">
-    <label class="campo-label">Foto do item devolvido</label>
-    <div class="foto-area" id="foto-area" onclick="abrirCamera()">
-      <div class="foto-placeholder">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
-          <circle cx="12" cy="13" r="4"/>
-        </svg>
-        <span>Toque para fotografar</span>
+    <div class="card" style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <label class="campo-label">Matrícula do funcionário</label>
+        <input type="text" id="inp-matricula" placeholder="Ex: 014943" inputmode="numeric">
       </div>
-      <img class="foto-preview" id="foto-preview" alt="Foto do item">
-      <button class="btn-retake" id="btn-retake" style="display:none" onclick="trocarFoto(event)">Trocar foto</button>
+      <div>
+        <label class="campo-label">Número da SA</label>
+        <input type="text" id="inp-sa" placeholder="Ex: 123456">
+      </div>
     </div>
-    <input type="file" id="input-foto" accept="image/*" capture="environment">
+
+    <div class="card" style="display:flex;flex-direction:column;gap:14px">
+      <div class="campos-row">
+        <div>
+          <label class="campo-label">Total de itens na SA</label>
+          <input type="number" id="inp-total" placeholder="Ex: 8" min="1" inputmode="numeric">
+        </div>
+        <div>
+          <label class="campo-label">Itens consumíveis</label>
+          <input type="number" id="inp-consumo" placeholder="Ex: 3" min="0" inputmode="numeric">
+        </div>
+      </div>
+      <div id="preview-calculo" style="display:none" class="resumo-sa">
+        <div class="resumo-row">
+          <span>Total de itens</span><span id="prev-total">—</span>
+        </div>
+        <div class="resumo-row">
+          <span>Itens consumíveis <span class="tag-consumo">sem foto</span></span>
+          <span id="prev-consumo">—</span>
+        </div>
+        <div class="resumo-row destaque">
+          <span>Fotos necessárias <span class="tag-fotos">obrigatório</span></span>
+          <span id="prev-fotos">—</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="btn-ir-fotos" onclick="irParaFotos()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Ir para as fotos
+    </button>
   </div>
 
-  <!-- MATRÍCULA E SA -->
-  <div class="card" style="display:flex;flex-direction:column;gap:14px">
-    <div>
-      <label class="campo-label">Matrícula do funcionário</label>
-      <input type="text" id="inp-matricula" placeholder="Ex: 00123" inputmode="numeric">
+  <!-- ETAPA 2: FOTOS -->
+  <div class="etapa" id="etapa-2">
+    <div class="card">
+      <div class="progresso-label">
+        <span id="prog-texto">0 de 0 fotos</span>
+        <span id="prog-pct">0%</span>
+      </div>
+      <div class="progresso-bar">
+        <div class="progresso-fill" id="prog-fill" style="width:0%"></div>
+      </div>
     </div>
-    <div>
-      <label class="campo-label">Número da SA</label>
-      <input type="text" id="inp-sa" placeholder="Ex: 000123">
-    </div>
-  </div>
 
-  <!-- BOTÃO -->
-  <button class="btn-salvar" id="btn-salvar" onclick="salvar()">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
-    Registrar devolução
-  </button>
+    <div class="card">
+      <div class="contador-wrap" id="contador-wrap">
+        <div class="contador-num" id="contador-num">0</div>
+        <div class="contador-label">fotos restantes</div>
+        <div class="contador-sub" id="contador-sub"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="campo-label" style="margin-bottom:10px">Fotos dos itens devolvidos</label>
+      <div class="fotos-grid" id="fotos-grid"></div>
+    </div>
+
+    <button class="btn-primary" id="btn-salvar" onclick="salvar()" disabled>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+      Registrar devolução
+    </button>
+    <button class="btn-secondary" onclick="voltarEtapa1()">← Voltar e editar</button>
+  </div>
 
   <!-- HISTÓRICO -->
   <div class="card">
-    <div class="hist-title">
-      <span>Registros de hoje</span>
-      <span id="hist-count" style="font-size:12px;background:#f1f5f9;padding:2px 8px;border-radius:6px;color:#0f172a">0</span>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <span style="font-size:13px;font-weight:700;color:#64748b">Registros de hoje</span>
+      <span id="hist-count" style="font-size:12px;background:#f1f5f9;padding:2px 8px;border-radius:6px;color:#0f172a;font-weight:700">0</span>
     </div>
-    <div id="historico"><div class="vazio-hist">Nenhum registro ainda</div></div>
+    <div id="historico"><div class="vazio">Nenhum registro ainda</div></div>
   </div>
 
 </div>
 
+<input type="file" id="input-foto" accept="image/*" capture="environment">
 <div class="toast" id="toast"></div>
 
 <script>
@@ -165,103 +229,205 @@ const SUPABASE_URL = 'https://vvwtqbehfwrgcmbjdniu.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2d3RxYmVoZndyZ2NtYmpkbml1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mjg3NTcsImV4cCI6MjA5NzEwNDc1N30.jHxva16Nae109RiWDlgl21saOJ6gBihstMmlKRRBXis';
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let fotoBlob = null;
+let fotosColetadas = []; // [{blob, url}]
+let totalFotos = 0;
+let slotAtivo = null;
 let registrosHoje = [];
 
-// Recuperar filial do localStorage
+// Recuperar filial salva
 const filialSalva = localStorage.getItem('devolucao_filial');
 if (filialSalva) document.getElementById('sel-filial').value = filialSalva;
-
 document.getElementById('sel-filial').addEventListener('change', e => {
   localStorage.setItem('devolucao_filial', e.target.value);
 });
 
-document.getElementById('input-foto').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  fotoBlob = file;
-  const url = URL.createObjectURL(file);
-  document.getElementById('foto-preview').src = url;
-  document.getElementById('foto-area').classList.add('tem-foto');
-  document.getElementById('btn-retake').style.display = 'block';
-  e.target.value = '';
+// Calcular fotos ao digitar
+['inp-total','inp-consumo'].forEach(id => {
+  document.getElementById(id).addEventListener('input', atualizarCalculo);
 });
 
-function abrirCamera() {
+function atualizarCalculo() {
+  const total = parseInt(document.getElementById('inp-total').value) || 0;
+  const consumo = parseInt(document.getElementById('inp-consumo').value) || 0;
+  const fotos = Math.max(0, total - consumo);
+  const prev = document.getElementById('preview-calculo');
+  if (total > 0) {
+    prev.style.display = 'flex';
+    document.getElementById('prev-total').textContent = total;
+    document.getElementById('prev-consumo').textContent = consumo;
+    document.getElementById('prev-fotos').textContent = fotos;
+  } else {
+    prev.style.display = 'none';
+  }
+}
+
+function irParaFotos() {
+  const filial = document.getElementById('sel-filial').value;
+  const matricula = document.getElementById('inp-matricula').value.trim();
+  const sa = document.getElementById('inp-sa').value.trim();
+  const total = parseInt(document.getElementById('inp-total').value) || 0;
+  const consumo = parseInt(document.getElementById('inp-consumo').value) || 0;
+
+  if (!filial) { toast('Selecione a filial', 'erro'); return; }
+  if (!matricula) { toast('Informe a matrícula', 'erro'); return; }
+  if (!sa) { toast('Informe o número da SA', 'erro'); return; }
+  if (total < 1) { toast('Informe o total de itens', 'erro'); return; }
+  if (consumo >= total) { toast('Itens consumíveis não pode ser maior ou igual ao total', 'erro'); return; }
+
+  totalFotos = total - consumo;
+  fotosColetadas = new Array(totalFotos).fill(null);
+
+  document.getElementById('etapa-1').classList.remove('ativa');
+  document.getElementById('etapa-2').classList.add('ativa');
+
+  renderGaleria();
+  atualizarProgresso();
+
+  // Abrir câmera no primeiro slot automaticamente
+  setTimeout(() => abrirCameraSlot(0), 300);
+}
+
+function voltarEtapa1() {
+  document.getElementById('etapa-2').classList.remove('ativa');
+  document.getElementById('etapa-1').classList.add('ativa');
+  fotosColetadas = [];
+}
+
+function renderGaleria() {
+  const grid = document.getElementById('fotos-grid');
+  grid.innerHTML = fotosColetadas.map((f, i) => {
+    if (f) {
+      return `<div class="foto-slot preenchido" onclick="abrirCameraSlot(${i})">
+        <img src="${f.url}" alt="foto ${i+1}">
+        <button class="btn-remover" onclick="removerFoto(event,${i})">✕</button>
+      </div>`;
+    }
+    const proxima = fotosColetadas.findIndex(x => !x) === i;
+    return `<div class="foto-slot vazio ${proxima?'proxima':''}" onclick="abrirCameraSlot(${i})">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+      <span>Item ${i+1}</span>
+    </div>`;
+  }).join('');
+}
+
+function atualizarProgresso() {
+  const feitas = fotosColetadas.filter(Boolean).length;
+  const pct = totalFotos > 0 ? Math.round(feitas / totalFotos * 100) : 0;
+  const restantes = totalFotos - feitas;
+
+  document.getElementById('prog-texto').textContent = feitas + ' de ' + totalFotos + ' foto' + (totalFotos !== 1 ? 's' : '');
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('contador-num').textContent = restantes;
+
+  if (restantes === 0) {
+    document.getElementById('contador-wrap').style.background = '#f0fdf4';
+    document.getElementById('contador-wrap').style.borderColor = '#bbf7d0';
+    document.getElementById('contador-num').style.color = '#16a34a';
+    document.getElementById('contador-sub').textContent = 'Todas as fotos registradas! ✓';
+    document.getElementById('btn-salvar').disabled = false;
+  } else {
+    document.getElementById('contador-wrap').style.background = '#f0f9ff';
+    document.getElementById('contador-wrap').style.borderColor = '#bae6fd';
+    document.getElementById('contador-num').style.color = '#0284c7';
+    document.getElementById('contador-sub').textContent = 'Toque em um slot azul para fotografar';
+    document.getElementById('btn-salvar').disabled = true;
+  }
+}
+
+function abrirCameraSlot(idx) {
+  slotAtivo = idx;
   document.getElementById('input-foto').click();
 }
 
-function trocarFoto(e) {
+function removerFoto(e, idx) {
   e.stopPropagation();
-  document.getElementById('input-foto').click();
+  fotosColetadas[idx] = null;
+  renderGaleria();
+  atualizarProgresso();
 }
 
-function toast(msg, tipo = '') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'toast show ' + tipo;
-  setTimeout(() => el.className = 'toast', 2500);
-}
+document.getElementById('input-foto').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file || slotAtivo === null) return;
+  const url = URL.createObjectURL(file);
+  fotosColetadas[slotAtivo] = { blob: file, url };
+  slotAtivo = null;
+  e.target.value = '';
+  renderGaleria();
+  atualizarProgresso();
+
+  // Abrir próximo slot automaticamente
+  const proximo = fotosColetadas.findIndex(x => !x);
+  if (proximo !== -1) setTimeout(() => abrirCameraSlot(proximo), 400);
+});
 
 async function salvar() {
   const filial = document.getElementById('sel-filial').value;
   const matricula = document.getElementById('inp-matricula').value.trim();
   const sa = document.getElementById('inp-sa').value.trim();
-
-  if (!filial) { toast('Selecione a filial', 'erro'); return; }
-  if (!fotoBlob) { toast('Tire uma foto do item', 'erro'); return; }
-  if (!matricula) { toast('Informe a matrícula', 'erro'); return; }
-  if (!sa) { toast('Informe o número da SA', 'erro'); return; }
+  const total = parseInt(document.getElementById('inp-total').value) || 0;
+  const consumo = parseInt(document.getElementById('inp-consumo').value) || 0;
 
   const btn = document.getElementById('btn-salvar');
   btn.disabled = true;
-  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Salvando...';
+  btn.innerHTML = '⏳ Salvando ' + fotosColetadas.length + ' foto(s)...';
 
   try {
-    // 1. Upload da foto
-    const ext = fotoBlob.name?.split('.').pop() || 'jpg';
-    const nomeArquivo = filial + '_' + matricula + '_' + sa + '_' + Date.now() + '.' + ext;
-    const { error: uploadErr } = await db.storage
-      .from('fotos-devolucoes')
-      .upload(nomeArquivo, fotoBlob, { contentType: fotoBlob.type || 'image/jpeg' });
+    const registros = [];
+    for (let i = 0; i < fotosColetadas.length; i++) {
+      const f = fotosColetadas[i];
+      const ext = f.blob.name?.split('.').pop() || 'jpg';
+      const nome = filial + '_' + matricula + '_' + sa + '_item' + (i+1) + '_' + Date.now() + '.' + ext;
 
-    if (uploadErr) throw uploadErr;
+      const { error: upErr } = await db.storage
+        .from('fotos-devolucoes')
+        .upload(nome, f.blob, { contentType: f.blob.type || 'image/jpeg' });
+      if (upErr) throw upErr;
 
-    // 2. URL pública
-    const { data: urlData } = db.storage.from('fotos-devolucoes').getPublicUrl(nomeArquivo);
-    const fotoUrl = urlData.publicUrl;
+      const { data: urlData } = db.storage.from('fotos-devolucoes').getPublicUrl(nome);
+      registros.push({
+        filial, matricula, sa,
+        foto_url: urlData.publicUrl,
+        total_itens: total,
+        itens_consumo: consumo,
+        num_item: i + 1
+      });
+    }
 
-    // 3. Inserir no banco
-    const { error: insertErr } = await db.from('devolucoes').insert({
-      filial,
-      matricula,
-      sa,
-      foto_url: fotoUrl
+    const { error: insErr } = await db.from('devolucoes').insert(registros);
+    if (insErr) throw insErr;
+
+    toast('SA ' + sa + ' registrada com ' + fotosColetadas.length + ' foto(s)!', 'ok');
+
+    // Adicionar ao histórico
+    registrosHoje.unshift({
+      sa, matricula, filial, total_itens: total, itens_consumo: consumo,
+      fotos: registros.map(r => r.foto_url),
+      criado_em: new Date().toISOString()
     });
-
-    if (insertErr) throw insertErr;
-
-    toast('Devolução registrada!', 'ok');
-
-    // Adicionar ao histórico local
-    registrosHoje.unshift({ filial, matricula, sa, foto_url: fotoUrl, criado_em: new Date().toISOString() });
     renderHistorico();
 
-    // Limpar campos (manter filial)
-    fotoBlob = null;
-    document.getElementById('foto-preview').src = '';
-    document.getElementById('foto-area').classList.remove('tem-foto');
-    document.getElementById('btn-retake').style.display = 'none';
+    // Limpar e voltar
+    fotosColetadas = [];
     document.getElementById('inp-matricula').value = '';
     document.getElementById('inp-sa').value = '';
+    document.getElementById('inp-total').value = '';
+    document.getElementById('inp-consumo').value = '';
+    document.getElementById('preview-calculo').style.display = 'none';
+    document.getElementById('etapa-2').classList.remove('ativa');
+    document.getElementById('etapa-1').classList.add('ativa');
 
-  } catch (err) {
+  } catch(err) {
     console.error(err);
-    toast('Erro ao salvar: ' + (err.message || 'tente novamente'), 'erro');
+    toast('Erro: ' + (err.message || 'tente novamente'), 'erro');
   }
 
   btn.disabled = false;
-  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg> Registrar devolução';
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg> Registrar devolução';
 }
 
 function fmtHora(iso) {
@@ -273,30 +439,43 @@ function renderHistorico() {
   const el = document.getElementById('historico');
   document.getElementById('hist-count').textContent = registrosHoje.length;
   if (!registrosHoje.length) {
-    el.innerHTML = '<div class="vazio-hist">Nenhum registro ainda</div>';
+    el.innerHTML = '<div class="vazio">Nenhum registro ainda</div>';
     return;
   }
   el.innerHTML = registrosHoje.map(r => `
     <div class="hist-item">
-      <img class="hist-thumb" src="${r.foto_url}" alt="foto">
+      <div class="hist-fotos">
+        ${r.fotos.slice(0,3).map(u => `<img class="hist-thumb" src="${u}" alt="">`).join('')}
+        ${r.fotos.length > 3 ? `<div class="hist-thumb" style="background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#64748b;border-radius:6px">+${r.fotos.length-3}</div>` : ''}
+      </div>
       <div class="hist-info">
-        <div class="hist-sa">SA: ${r.sa}</div>
-        <div class="hist-mat">Mat: ${r.matricula}</div>
-        <div class="hist-filial">Filial ${r.filial}</div>
+        <div class="hist-sa">SA ${r.sa} · Mat ${r.matricula}</div>
+        <div class="hist-det">${r.fotos.length} foto(s) · ${r.itens_consumo} consumível(is) · Filial ${r.filial}</div>
       </div>
       <div class="hist-hora">${fmtHora(r.criado_em)}</div>
     </div>
   `).join('');
 }
 
-// Carregar registros de hoje ao abrir
+// Carregar hoje
 async function carregarHoje() {
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = new Date().toISOString().slice(0,10);
   const { data } = await db.from('devolucoes')
     .select('*')
     .gte('criado_em', hoje + 'T00:00:00')
     .order('criado_em', { ascending: false });
-  if (data) { registrosHoje = data; renderHistorico(); }
+
+  if (!data?.length) return;
+
+  // Agrupar por SA + matrícula
+  const grupos = {};
+  data.forEach(r => {
+    const key = r.sa + '_' + r.matricula;
+    if (!grupos[key]) grupos[key] = { sa: r.sa, matricula: r.matricula, filial: r.filial, total_itens: r.total_itens, itens_consumo: r.itens_consumo, fotos: [], criado_em: r.criado_em };
+    grupos[key].fotos.push(r.foto_url);
+  });
+  registrosHoje = Object.values(grupos);
+  renderHistorico();
 }
 
 carregarHoje();
