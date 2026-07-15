@@ -383,23 +383,62 @@ async function abrirFilial(cod, nome) {
     return;
   }
 
-  document.getElementById('modal-content').innerHTML = `
-    <table class="modal-table">
-      <thead><tr>
-        <th>Foto</th><th>Matrícula</th><th>SA</th><th>Data/Hora</th>
-      </tr></thead>
-      <tbody>
-        ${data.map(r => `
-          <tr>
-            <td><img class="foto-mini" src="${r.foto_url}" onclick="verFoto('${r.foto_url}')" alt="foto"></td>
-            <td style="font-family:monospace;font-weight:600">${r.matricula}</td>
-            <td>${r.sa}</td>
-            <td style="font-size:12px;color:#64748b">${fmtDT(r.criado_em)}</td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
+  // Buscar itens da entregas_almoxarife para todas as SAs desta filial
+  const sas = [...new Set(data.map(r => r.sa))];
+  const { data: itens } = await db.from('entregas_almoxarife')
+    .select('num_req, descricao, produto, quantidade, solicitante, matricula, cc')
+    .eq('filial', cod)
+    .in('num_req', sas);
+
+  // Agrupar itens por SA
+  const itensPorSA = {};
+  (itens || []).forEach(i => {
+    if (!itensPorSA[i.num_req]) itensPorSA[i.num_req] = [];
+    itensPorSA[i.num_req].push(i);
+  });
+
+  document.getElementById('modal-content').innerHTML = data.map(r => {
+    const saItens = itensPorSA[r.sa] || [];
+    return `
+      <div style="border-bottom:1px solid #f1f5f9;padding:14px 16px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:${saItens.length?'10px':'0'}">
+          <img class="foto-mini" src="${r.foto_url}" onclick="verFoto('${r.foto_url}')" alt="foto">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-size:13px;font-weight:700">SA ${r.sa}</span>
+              <span style="font-size:12px;color:#64748b">Mat: <b style="color:#0f172a">${r.matricula}</b></span>
+              <span style="font-size:11px;color:#94a3b8">${fmtDT(r.criado_em)}</span>
+            </div>
+            ${saItens.length === 0 ? '<div style="font-size:11px;color:#f59e0b;margin-top:3px">⚠ Nenhum item encontrado na SA</div>' : ''}
+          </div>
+        </div>
+        ${saItens.length ? `
+          <div style="background:#f8fafc;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0">
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead>
+                <tr style="background:#f1f5f9">
+                  <th style="text-align:left;padding:7px 10px;font-weight:600;color:#64748b;font-size:11px">Item</th>
+                  <th style="text-align:left;padding:7px 10px;font-weight:600;color:#64748b;font-size:11px">Descrição</th>
+                  <th style="text-align:center;padding:7px 10px;font-weight:600;color:#64748b;font-size:11px">Qtd</th>
+                  <th style="text-align:left;padding:7px 10px;font-weight:600;color:#64748b;font-size:11px">CC</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${saItens.map((it, idx) => `
+                  <tr style="${idx%2===1?'background:#f8fafc':'background:#fff'}">
+                    <td style="padding:7px 10px;color:#64748b;font-family:monospace;font-size:11px">${it.produto||'—'}</td>
+                    <td style="padding:7px 10px;font-weight:500;color:#0f172a">${it.descricao||it.produto||'—'}</td>
+                    <td style="padding:7px 10px;text-align:center;font-weight:700;color:#2563eb">${it.quantidade||0}</td>
+                    <td style="padding:7px 10px;color:#64748b;font-size:11px">${it.cc||'—'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
 }
 
 function fecharModal(e) {
