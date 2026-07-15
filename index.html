@@ -248,6 +248,13 @@ let slotAtivo = null;
 let registrosHoje = [];
 let modoJustificativa = false;
 
+function toast(msg, tipo = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + tipo;
+  setTimeout(() => el.className = 'toast', 3000);
+}
+
 // Filial salva
 const filialSalva = localStorage.getItem('devolucao_filial');
 if (filialSalva) document.getElementById('sel-filial').value = filialSalva;
