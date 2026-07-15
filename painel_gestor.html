@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel Gestor — Devoluções</title>
+<link rel="icon" href="data:,">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f1f5f9;color:#0f172a;min-height:100vh}
+
+/* LOGIN */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-card{background:#fff;border-radius:16px;padding:32px;width:100%;max-width:360px;box-shadow:0 4px 24px #00000012}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+.login-logo .ico{width:36px;height:36px;background:#0f172a;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px}
+.login-logo .nome{font-size:15px;font-weight:700}
+.login-logo .sub{font-size:11px;color:#64748b}
+.login-card h2{font-size:18px;font-weight:700;margin-bottom:4px}
+.login-card p{font-size:13px;color:#64748b;margin-bottom:20px}
+label{display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:4px}
+input[type=email],input[type=password]{width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:9px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px}
+input:focus{border-color:#0f172a}
+.btn-login{width:100%;padding:12px;background:#0f172a;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-login:hover{background:#1e293b}
+.btn-login:disabled{background:#94a3b8;cursor:not-allowed}
+.msg-erro{font-size:13px;padding:10px 12px;border-radius:8px;margin-bottom:12px;background:#fee2e2;color:#991b1b}
+
+/* APP */
+#app{display:none}
+.header{background:#0f172a;color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-ico{width:30px;height:30px;background:#1e293b;border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.header-title{font-size:14px;font-weight:700}
+.header-sub{font-size:11px;color:#94a3b8;margin-top:1px}
+.btn-sair{background:none;border:1px solid #334155;color:#94a3b8;border-radius:7px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+
+.corpo{padding:20px;max-width:1000px;margin:0 auto}
+
+/* RESUMO TOPO */
+.resumo-topo{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.res-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px}
+.res-num{font-size:26px;font-weight:800;line-height:1}
+.res-label{font-size:11px;color:#64748b;margin-top:4px}
+.num-azul{color:#2563eb}
+.num-verde{color:#16a34a}
+.num-laranja{color:#ea580c}
+
+/* BANNER DESCARTE */
+.banner-descarte{background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.banner-texto{font-size:13px;color:#92400e;font-weight:600}
+.banner-sub{font-size:12px;color:#b45309;font-weight:400;margin-top:2px}
+.btn-baixar{background:#0f172a;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.btn-baixar:hover{background:#1e293b}
+.btn-baixar:disabled{background:#94a3b8;cursor:not-allowed}
+
+/* LOTES */
+.secao-title{font-size:13px;font-weight:700;color:#64748b;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.lotes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:24px}
+.lote-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px}
+.lote-num{font-size:11px;font-weight:700;color:#64748b;margin-bottom:4px}
+.lote-itens{font-size:20px;font-weight:800;color:#0f172a;line-height:1}
+.lote-periodo{font-size:11px;color:#94a3b8;margin-top:4px}
+.lote-por{font-size:11px;color:#94a3b8}
+
+/* CARDS FILIAIS */
+.filtro-busca{width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:9px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px;background:#fff}
+.filtro-busca:focus{border-color:#0f172a}
+.filiais-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.filial-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;cursor:pointer;transition:all .15s;position:relative}
+.filial-card:hover{box-shadow:0 4px 16px #00000012;border-color:#cbd5e1;transform:translateY(-1px)}
+.filial-cod{font-size:11px;font-weight:700;color:#64748b;margin-bottom:4px}
+.filial-nome{font-size:13px;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:10px}
+.filial-num{font-size:28px;font-weight:800;color:#2563eb;line-height:1}
+.filial-label{font-size:11px;color:#94a3b8;margin-top:2px}
+.filial-card.zero .filial-num{color:#cbd5e1}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:#00000050;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:680px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-head{padding:18px 20px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:16px;font-weight:700}
+.modal-sub{font-size:12px;color:#64748b;margin-top:2px}
+.btn-fechar{background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;line-height:1;padding:4px}
+.modal-body{overflow-y:auto;flex:1}
+.modal-table{width:100%;border-collapse:collapse;font-size:13px}
+.modal-table th{text-align:left;padding:10px 16px;font-size:11px;font-weight:600;color:#64748b;background:#f8fafc;border-bottom:2px solid #e2e8f0;position:sticky;top:0}
+.modal-table td{padding:10px 16px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.modal-table tr:last-child td{border-bottom:none}
+.foto-mini{width:40px;height:40px;border-radius:6px;object-fit:cover;cursor:pointer}
+.modal-vazio{text-align:center;padding:40px;color:#94a3b8;font-size:13px}
+.modal-loading{text-align:center;padding:40px;color:#94a3b8}
+
+/* FOTO GRANDE */
+.foto-grande-overlay{position:fixed;inset:0;background:#000000cc;z-index:300;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.foto-grande-overlay img{max-width:90vw;max-height:90vh;border-radius:12px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.toast.ok{background:#16a34a}
+.toast.erro{background:#dc2626}
+
+.loading-filiais{text-align:center;padding:40px;color:#94a3b8}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="tela-login">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="ico">A</div>
+      <div>
+        <div class="nome">Almoxarifado</div>
+        <div class="sub">Painel do Gestor</div>
+      </div>
+    </div>
+    <h2>Acesso restrito</h2>
+    <p>Somente gestores autorizados.</p>
+    <div id="msg-erro" style="display:none" class="msg-erro"></div>
+    <label>E-mail</label>
+    <input type="email" id="inp-email" placeholder="seu@email.com">
+    <label>Senha</label>
+    <input type="password" id="inp-senha" placeholder="••••••••">
+    <button class="btn-login" id="btn-login">Entrar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="header-ico">A</div>
+      <div>
+        <div class="header-title">Painel de Devoluções</div>
+        <div class="header-sub" id="header-email">Gestor</div>
+      </div>
+    </div>
+    <button class="btn-sair" id="btn-sair">Sair</button>
+  </div>
+
+  <div class="corpo">
+
+    <!-- RESUMO -->
+    <div class="resumo-topo">
+      <div class="res-card">
+        <div class="res-num num-azul" id="tot-total">—</div>
+        <div class="res-label">Total de devoluções</div>
+      </div>
+      <div class="res-card">
+        <div class="res-num num-verde" id="tot-filiais">—</div>
+        <div class="res-label">Filiais com registro</div>
+      </div>
+      <div class="res-card">
+        <div class="res-num num-laranja" id="tot-periodo">—</div>
+        <div class="res-label">No período atual</div>
+      </div>
+    </div>
+
+    <!-- BANNER DESCARTE -->
+    <div class="banner-descarte" id="banner-descarte" style="display:none">
+      <div>
+        <div class="banner-texto">⚠ Período de descarte aberto</div>
+        <div class="banner-sub" id="banner-sub">Baixe o Excel com os itens do período para iniciar o descarte.</div>
+      </div>
+      <button class="btn-baixar" id="btn-baixar" onclick="baixarExcel()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Baixar Excel
+      </button>
+    </div>
+
+    <!-- LOTES ANTERIORES -->
+    <div id="sec-lotes" style="display:none">
+      <div class="secao-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Lotes gerados
+      </div>
+      <div class="lotes-grid" id="lotes-grid"></div>
+    </div>
+
+    <!-- FILIAIS -->
+    <div class="secao-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Devoluções por filial <span id="periodo-label" style="font-weight:400;font-size:12px;color:#94a3b8"></span>
+    </div>
+    <input class="filtro-busca" id="filtro-busca" placeholder="🔍 Buscar filial..." oninput="filtrarFiliais()">
+    <div class="filiais-grid" id="filiais-grid"><div class="loading-filiais">Carregando...</div></div>
+
+  </div>
+</div>
+
+<!-- MODAL DETALHES -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="fecharModal(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="modal-title">Filial</div>
+        <div class="modal-sub" id="modal-sub"></div>
+      </div>
+      <button class="btn-fechar" onclick="document.getElementById('modal').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="modal-content" class="modal-loading">Carregando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOTO GRANDE -->
+<div class="foto-grande-overlay" id="foto-grande" style="display:none" onclick="this.style.display='none'">
+  <img id="foto-grande-img" src="" alt="foto">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://vvwtqbehfwrgcmbjdniu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2d3RxYmVoZndyZ2NtYmpkbml1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mjg3NTcsImV4cCI6MjA5NzEwNDc1N30.jHxva16Nae109RiWDlgl21saOJ6gBihstMmlKRRBXis';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const FILIAIS = {
+  '01':'MATRIZ','03':'PAU DOS FERROS','04':'ITAPIPOCA','06':'CURRAIS NOVOS',
+  '07':'SOBRAL','08':'APARECIDA DE GOIANIA','09':'MARACANAU','10':'MOSSORO',
+  '11':'ANAPOLIS','13':'ALAGOINHAS','14':'RIBEIRA DO POMBAL','15':'PAULO AFONSO',
+  '22':'GOIANIA','23':'BATURITE','24':'MORRINHOS','25':'CASCAVEL','27':'CAUCAIA',
+  '29':'HORIZONTE','34':'SENHOR DO BONFIM','36':'LUZIANIA','37':'DIVINOPOLIS',
+  '40':'GARANHUNS','41':'FLORIANO','42':'LIVRAMENTO DE NOSSA SENHORA','43':'HORTOLANDIA'
+};
+
+let dadosFiliais = [];
+let periodoInicio = '';
+let periodoFim = '';
+let userEmail = '';
+
+// ── PERÍODO ────────────────────────────────────────────────────────────────
+function calcPeriodo() {
+  const hoje = new Date();
+  const dia = hoje.getDate();
+  const ano = hoje.getFullYear();
+  const mes = hoje.getMonth(); // 0-based
+
+  let inicio, fim;
+  if (dia >= 30) {
+    // período atual: 30 deste mês até 29 do próximo
+    inicio = new Date(ano, mes, 30);
+    fim = new Date(ano, mes + 1, 29);
+  } else {
+    // período corrente: 30 do mês passado até 29 deste mês
+    inicio = new Date(ano, mes - 1, 30);
+    fim = new Date(ano, mes, 29);
+  }
+  return {
+    inicio: inicio.toISOString().slice(0, 10),
+    fim: fim.toISOString().slice(0, 10)
+  };
+}
+
+function fmtData(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  return d + '/' + m + '/' + y;
+}
+
+function isPeriodoDescarte() {
+  const hoje = new Date();
+  return hoje.getDate() >= 30;
+}
+
+// ── LOGIN ──────────────────────────────────────────────────────────────────
+document.getElementById('btn-login').addEventListener('click', async () => {
+  const email = document.getElementById('inp-email').value.trim();
+  const senha = document.getElementById('inp-senha').value;
+  const erroEl = document.getElementById('msg-erro');
+  erroEl.style.display = 'none';
+  if (!email || !senha) { erroEl.textContent = 'Preencha e-mail e senha.'; erroEl.style.display = 'block'; return; }
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.textContent = 'Entrando...';
+  const { error } = await db.auth.signInWithPassword({ email, password: senha });
+  btn.disabled = false; btn.textContent = 'Entrar';
+  if (error) { erroEl.textContent = 'E-mail ou senha inválidos.'; erroEl.style.display = 'block'; return; }
+  iniciarApp(email);
+});
+
+document.getElementById('inp-senha').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btn-login').click();
+});
+
+document.getElementById('btn-sair').addEventListener('click', async () => {
+  await db.auth.signOut(); location.reload();
+});
+
+async function verificarSessao() {
+  const { data } = await db.auth.getSession();
+  if (data.session) iniciarApp(data.session.user.email);
+}
+
+async function iniciarApp(email) {
+  userEmail = email;
+  document.getElementById('tela-login').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('header-email').textContent = email;
+
+  const p = calcPeriodo();
+  periodoInicio = p.inicio;
+  periodoFim = p.fim;
+  document.getElementById('periodo-label').textContent = '(' + fmtData(periodoInicio) + ' a ' + fmtData(periodoFim) + ')';
+
+  if (isPeriodoDescarte()) {
+    document.getElementById('banner-descarte').style.display = 'flex';
+    document.getElementById('banner-sub').textContent =
+      'Período: ' + fmtData(periodoInicio) + ' a ' + fmtData(periodoFim);
+  }
+
+  await Promise.all([carregarFiliais(), carregarLotes()]);
+}
+
+// ── FILIAIS ────────────────────────────────────────────────────────────────
+async function carregarFiliais() {
+  const { data, error } = await db.from('devolucoes')
+    .select('filial, criado_em')
+    .gte('criado_em', periodoInicio + 'T00:00:00')
+    .lte('criado_em', periodoFim + 'T23:59:59');
+
+  if (error) { console.error(error); return; }
+
+  const contagem = {};
+  (data || []).forEach(r => {
+    contagem[r.filial] = (contagem[r.filial] || 0) + 1;
+  });
+
+  dadosFiliais = Object.entries(FILIAIS).map(([cod, nome]) => ({
+    cod, nome, total: contagem[cod] || 0
+  })).sort((a, b) => b.total - a.total);
+
+  const totalGeral = dadosFiliais.reduce((s, f) => s + f.total, 0);
+  const comRegistro = dadosFiliais.filter(f => f.total > 0).length;
+  document.getElementById('tot-total').textContent = totalGeral;
+  document.getElementById('tot-filiais').textContent = comRegistro;
+  document.getElementById('tot-periodo').textContent = totalGeral;
+
+  renderFiliais(dadosFiliais);
+}
+
+function renderFiliais(lista) {
+  const grid = document.getElementById('filiais-grid');
+  if (!lista.length) { grid.innerHTML = '<div class="loading-filiais">Nenhuma filial encontrada.</div>'; return; }
+  grid.innerHTML = lista.map(f => `
+    <div class="filial-card ${f.total === 0 ? 'zero' : ''}" onclick="abrirFilial('${f.cod}','${f.nome}')">
+      <div class="filial-cod">Filial ${f.cod}</div>
+      <div class="filial-nome">${f.nome}</div>
+      <div class="filial-num">${f.total}</div>
+      <div class="filial-label">devolução${f.total !== 1 ? 'ões' : ''} no período</div>
+    </div>
+  `).join('');
+}
+
+function filtrarFiliais() {
+  const busca = document.getElementById('filtro-busca').value.toLowerCase();
+  const filtrado = busca
+    ? dadosFiliais.filter(f => f.nome.toLowerCase().includes(busca) || f.cod.includes(busca))
+    : dadosFiliais;
+  renderFiliais(filtrado);
+}
+
+// ── MODAL FILIAL ───────────────────────────────────────────────────────────
+async function abrirFilial(cod, nome) {
+  document.getElementById('modal-title').textContent = 'Filial ' + cod + ' — ' + nome;
+  document.getElementById('modal-sub').textContent = fmtData(periodoInicio) + ' a ' + fmtData(periodoFim);
+  document.getElementById('modal-content').innerHTML = '<div class="modal-loading">Carregando...</div>';
+  document.getElementById('modal').style.display = 'flex';
+
+  const { data, error } = await db.from('devolucoes')
+    .select('*')
+    .eq('filial', cod)
+    .gte('criado_em', periodoInicio + 'T00:00:00')
+    .lte('criado_em', periodoFim + 'T23:59:59')
+    .order('criado_em', { ascending: false });
+
+  if (error || !data?.length) {
+    document.getElementById('modal-content').innerHTML = '<div class="modal-vazio">Nenhuma devolução neste período.</div>';
+    return;
+  }
+
+  document.getElementById('modal-content').innerHTML = `
+    <table class="modal-table">
+      <thead><tr>
+        <th>Foto</th><th>Matrícula</th><th>SA</th><th>Data/Hora</th>
+      </tr></thead>
+      <tbody>
+        ${data.map(r => `
+          <tr>
+            <td><img class="foto-mini" src="${r.foto_url}" onclick="verFoto('${r.foto_url}')" alt="foto"></td>
+            <td style="font-family:monospace;font-weight:600">${r.matricula}</td>
+            <td>${r.sa}</td>
+            <td style="font-size:12px;color:#64748b">${fmtDT(r.criado_em)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function fecharModal(e) {
+  if (e.target === document.getElementById('modal')) document.getElementById('modal').style.display = 'none';
+}
+
+function verFoto(url) {
+  document.getElementById('foto-grande-img').src = url;
+  document.getElementById('foto-grande').style.display = 'flex';
+}
+
+function fmtDT(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ── LOTES ──────────────────────────────────────────────────────────────────
+async function carregarLotes() {
+  const { data } = await db.from('lotes_descarte').select('*').order('gerado_em', { ascending: false });
+  if (!data?.length) return;
+  document.getElementById('sec-lotes').style.display = 'block';
+  document.getElementById('lotes-grid').innerHTML = data.map(l => `
+    <div class="lote-card">
+      <div class="lote-num">LOTE #${String(l.numero_lote).padStart(3,'0')}</div>
+      <div class="lote-itens">${l.total_itens} <span style="font-size:13px;font-weight:400;color:#64748b">itens</span></div>
+      <div class="lote-periodo">${fmtData(l.periodo_inicio)} → ${fmtData(l.periodo_fim)}</div>
+      <div class="lote-por">por ${l.gerado_por || '—'} · ${fmtDT(l.gerado_em)}</div>
+    </div>
+  `).join('');
+}
+
+// ── EXCEL + LOTE ───────────────────────────────────────────────────────────
+async function baixarExcel() {
+  const btn = document.getElementById('btn-baixar');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Gerando...';
+
+  try {
+    // Buscar dados do período
+    const { data, error } = await db.from('devolucoes')
+      .select('*')
+      .gte('criado_em', periodoInicio + 'T00:00:00')
+      .lte('criado_em', periodoFim + 'T23:59:59')
+      .order('filial')
+      .order('criado_em');
+
+    if (error) throw error;
+    if (!data?.length) { toast('Nenhum item no período', 'erro'); btn.disabled=false; btn.innerHTML='⬇ Baixar Excel'; return; }
+
+    // Montar planilha
+    const linhas = data.map((r, i) => ({
+      '#': i + 1,
+      'Filial': r.filial,
+      'Nome Filial': FILIAIS[r.filial] || r.filial,
+      'Matrícula': r.matricula,
+      'Número SA': r.sa,
+      'Data/Hora': fmtDT(r.criado_em),
+      'Foto URL': r.foto_url || ''
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(linhas);
+
+    // Larguras
+    ws['!cols'] = [
+      {wch:5},{wch:8},{wch:28},{wch:12},{wch:14},{wch:18},{wch:60}
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Descarte');
+
+    // Aba resumo por filial
+    const resumo = {};
+    data.forEach(r => { resumo[r.filial] = (resumo[r.filial]||0)+1; });
+    const resumoLinhas = Object.entries(resumo).map(([f,q]) => ({
+      'Filial': f,
+      'Nome': FILIAIS[f]||f,
+      'Qtd Itens': q
+    }));
+    const wsR = XLSX.utils.json_to_sheet(resumoLinhas);
+    wsR['!cols'] = [{wch:8},{wch:30},{wch:12}];
+    XLSX.utils.book_append_sheet(wb, wsR, 'Resumo por Filial');
+
+    const nomeArq = 'descarte_lote_' + periodoInicio + '_a_' + periodoFim + '.xlsx';
+    XLSX.writeFile(wb, nomeArq);
+
+    // Salvar lote no banco
+    const { data: ultimoLote } = await db.from('lotes_descarte')
+      .select('numero_lote').order('numero_lote', { ascending: false }).limit(1);
+    const proximoNum = (ultimoLote?.[0]?.numero_lote || 0) + 1;
+
+    const filiais_resumo = Object.entries(resumo).map(([f,q]) => ({ filial: f, nome: FILIAIS[f]||f, quantidade: q }));
+
+    await db.from('lotes_descarte').insert({
+      numero_lote: proximoNum,
+      periodo_inicio: periodoInicio,
+      periodo_fim: periodoFim,
+      total_itens: data.length,
+      filiais: filiais_resumo,
+      gerado_por: userEmail
+    });
+
+    toast('Lote #' + String(proximoNum).padStart(3,'0') + ' gerado com ' + data.length + ' itens!', 'ok');
+    await carregarLotes();
+
+  } catch (err) {
+    console.error(err);
+    toast('Erro: ' + (err.message || 'tente novamente'), 'erro');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Baixar Excel';
+}
+
+function toast(msg, tipo='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + tipo;
+  setTimeout(() => el.className='toast', 3000);
+}
+
+verificarSessao();
+</script>
+</body>
+</html>
