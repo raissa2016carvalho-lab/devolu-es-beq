@@ -217,6 +217,7 @@ input[type=file]{display:none}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
       Registrar devolução
     </button>
+    <!-- btn nunca fica disabled — tentarSalvar decide o que fazer -->
     <button class="btn-secondary" onclick="voltarEtapa1()">← Voltar e editar</button>
   </div>
 
@@ -351,6 +352,7 @@ function atualizarProgresso() {
   const wrap = document.getElementById('contador-wrap');
   const num = document.getElementById('contador-num');
   const sub = document.getElementById('contador-sub');
+  const btn = document.getElementById('btn-salvar');
 
   if (concluidos === totalFotos && semJust === 0) {
     num.textContent = '✓';
@@ -358,28 +360,25 @@ function atualizarProgresso() {
     sub.textContent = 'Pronto para enviar!';
     wrap.style.cssText = 'background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px;text-align:center';
     num.style.color = '#16a34a';
-    document.getElementById('btn-salvar').disabled = false;
-  } else if (modoJustificativa && semJust > 0) {
-    num.textContent = semJust;
-    document.getElementById('contador-label').textContent = 'sem motivo ainda';
+    btn.style.background = '#0f172a';
+    btn.style.cursor = 'pointer';
+  } else if (modoJustificativa && (semJust > 0 || vazios > 0)) {
+    const pendentes = semJust + vazios;
+    num.textContent = pendentes;
+    document.getElementById('contador-label').textContent = 'item(ns) sem motivo';
     sub.textContent = 'Toque nos slots vermelhos para justificar';
     wrap.style.cssText = 'background:#fff5f5;border:1px solid #fca5a5;border-radius:12px;padding:16px;text-align:center';
     num.style.color = '#ef4444';
-    document.getElementById('btn-salvar').disabled = true;
-  } else if (modoJustificativa && vazios > 0) {
-    num.textContent = vazios;
-    document.getElementById('contador-label').textContent = 'itens sem justificativa';
-    sub.textContent = 'Toque nos slots para informar motivo';
-    wrap.style.cssText = 'background:#fff5f5;border:1px solid #fca5a5;border-radius:12px;padding:16px;text-align:center';
-    num.style.color = '#ef4444';
-    document.getElementById('btn-salvar').disabled = true;
+    btn.style.background = '#94a3b8';
+    btn.style.cursor = 'not-allowed';
   } else {
     num.textContent = vazios;
     document.getElementById('contador-label').textContent = 'fotos restantes';
     sub.textContent = 'Toque em um slot para fotografar';
     wrap.style.cssText = 'background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:16px;text-align:center';
     num.style.color = '#0284c7';
-    document.getElementById('btn-salvar').disabled = true;
+    btn.style.background = '#0f172a';
+    btn.style.cursor = 'pointer';
   }
 }
 
@@ -413,8 +412,16 @@ document.getElementById('input-foto').addEventListener('change', e => {
 // ── JUSTIFICATIVA ─────────────────────────────────────────────────────────
 function tentarSalvar() {
   const vazios = fotosColetadas.filter(f => !f).length;
-  if (vazios > 0) {
-    // Ativa modo justificativa: slots vazios viram "justificar"
+  const semJust = fotosColetadas.filter(f => f && f.justificativa !== undefined && !f.justificativa.trim()).length;
+
+  // Se ainda está em modo justificativa com pendências, bloqueia
+  if (modoJustificativa && (vazios > 0 || semJust > 0)) {
+    toast('Preencha o motivo dos itens sem foto', 'erro');
+    return;
+  }
+
+  // Se tem slots vazios e ainda não entrou em modo justificativa, ativa
+  if (vazios > 0 && !modoJustificativa) {
     modoJustificativa = true;
     fotosColetadas = fotosColetadas.map(f => f === null ? { justificativa: '' } : f);
     toast('Informe o motivo para os ' + vazios + ' item(ns) sem foto', 'erro');
@@ -422,6 +429,7 @@ function tentarSalvar() {
     atualizarProgresso();
     return;
   }
+
   salvar();
 }
 
@@ -448,7 +456,8 @@ async function salvar() {
   const consumo = parseInt(document.getElementById('inp-consumo').value) || 0;
 
   const btn = document.getElementById('btn-salvar');
-  btn.disabled = true;
+  btn.style.background = '#94a3b8';
+  btn.style.cursor = 'not-allowed';
   btn.innerHTML = '⏳ Salvando...';
 
   try {
@@ -499,6 +508,7 @@ async function salvar() {
   }
 
   btn.disabled = false;
+  btn.style.background = '#0f172a';
   btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg> Registrar devolução';
 }
 
