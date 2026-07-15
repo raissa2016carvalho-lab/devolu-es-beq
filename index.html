@@ -2,140 +2,88 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Entregas do Dia — Almoxarifado</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Coletor de Devoluções</title>
 <link rel="icon" href="data:,">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:system-ui,-apple-system,sans-serif;background:#f1f5f9;color:#0f172a;min-height:100vh}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f1f5f9;color:#0f172a;min-height:100vh}
 
-  /* LOGIN */
-  .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-  .login-card{background:#fff;border-radius:16px;padding:32px;width:100%;max-width:380px;box-shadow:0 4px 24px #00000010}
-  .login-logo{display:flex;align-items:center;gap:10px;margin-bottom:24px}
-  .login-logo .ico{width:36px;height:36px;background:#0f172a;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px}
-  .login-logo .txt{font-size:15px;font-weight:700;color:#0f172a}
-  .login-logo .sub{font-size:11px;color:#64748b;margin-top:1px}
-  .login-card h2{font-size:18px;font-weight:700;margin-bottom:4px}
-  .login-card p{font-size:13px;color:#64748b;margin-bottom:20px}
-  label{display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:4px}
-  input{width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:9px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px}
-  input:focus{border-color:#0f172a}
-  .btn{width:100%;padding:12px;background:#0f172a;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
-  .btn:hover{background:#1e293b}
-  .msg{font-size:13px;padding:10px 12px;border-radius:8px;margin-bottom:12px}
-  .erro{background:#fee2e2;color:#991b1b}
+.header{background:#0f172a;color:#fff;padding:14px 20px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+.header-ico{width:32px;height:32px;background:#1e293b;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+.header-title{font-size:15px;font-weight:700}
+.header-sub{font-size:11px;color:#94a3b8;margin-top:1px}
 
-  /* APP */
-  #app{display:none}
-  .header{background:#0f172a;color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-  .header-left{display:flex;align-items:center;gap:10px}
-  .header-ico{width:30px;height:30px;background:#1e293b;border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
-  .header-title{font-size:14px;font-weight:700}
-  .header-sub{font-size:11px;color:#94a3b8;margin-top:1px}
-  .btn-sair{background:none;border:1px solid #334155;color:#94a3b8;border-radius:7px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+.corpo{padding:20px;max-width:500px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 
-  .filtros{background:#fff;border-bottom:1px solid #e2e8f0;padding:12px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:57px;z-index:99}
-  .filtros input[type=date]{padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:0}
-  .filtros input[type=text]{flex:1;min-width:160px;padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:0}
-  .badge-count{background:#f1f5f9;border-radius:6px;padding:4px 10px;font-size:12px;color:#64748b;white-space:nowrap}
-  .badge-count b{color:#0f172a}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px}
 
-  .corpo{padding:16px 20px;max-width:900px;margin:0 auto}
+/* FILIAL */
+.filial-label{font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;display:block}
+select{width:100%;padding:11px 12px;border:1px solid #e2e8f0;border-radius:9px;font-size:14px;font-family:inherit;outline:none;background:#fff;color:#0f172a;appearance:auto}
+select:focus{border-color:#0f172a}
 
-  /* CARD DE ITEM */
-  .item-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden;transition:box-shadow .15s}
-  .item-card:hover{box-shadow:0 2px 12px #00000010}
-  .item-card.devolvido{border-left:4px solid #16a34a}
-  .item-card.nao_devolvido{border-left:4px solid #ef4444}
-  .item-card.pendente{border-left:4px solid #e2e8f0}
+/* FOTO */
+.foto-area{border:2px dashed #cbd5e1;border-radius:12px;overflow:hidden;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;background:#f8fafc;transition:border-color .2s}
+.foto-area:hover{border-color:#94a3b8}
+.foto-area.tem-foto{border:2px solid #e2e8f0}
+.foto-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;color:#94a3b8;pointer-events:none}
+.foto-placeholder svg{width:40px;height:40px;opacity:.6}
+.foto-placeholder span{font-size:13px}
+.foto-preview{width:100%;height:100%;object-fit:cover;display:none}
+.foto-area.tem-foto .foto-preview{display:block}
+.foto-area.tem-foto .foto-placeholder{display:none}
+.btn-retake{position:absolute;bottom:10px;right:10px;background:#0f172a;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+input[type=file]{display:none}
 
-  .item-body{padding:14px 16px;display:flex;align-items:flex-start;gap:12px}
-  .item-info{flex:1;min-width:0}
-  .item-desc{font-size:14px;font-weight:600;color:#0f172a;line-height:1.3}
-  .item-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
-  .meta-tag{font-size:11.5px;color:#64748b;background:#f8fafc;border-radius:4px;padding:2px 7px}
-  .meta-tag b{color:#0f172a}
+/* CAMPOS */
+.campo-label{font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;display:block}
+input[type=text]{width:100%;padding:11px 12px;border:1px solid #e2e8f0;border-radius:9px;font-size:15px;font-family:inherit;outline:none;margin-bottom:0}
+input[type=text]:focus{border-color:#0f172a}
+input[type=text]::placeholder{color:#cbd5e1}
 
-  .item-acoes{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
-  .btn-dev{width:40px;height:40px;border:none;border-radius:9px;cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .15s}
-  .btn-sim{background:#dcfce7;color:#16a34a}
-  .btn-sim:hover,.btn-sim.ativo{background:#16a34a;color:#fff}
-  .btn-nao{background:#fee2e2;color:#ef4444}
-  .btn-nao:hover,.btn-nao.ativo{background:#ef4444;color:#fff}
+/* BTN SALVAR */
+.btn-salvar{width:100%;padding:15px;background:#0f172a;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+.btn-salvar:hover{background:#1e293b}
+.btn-salvar:disabled{background:#94a3b8;cursor:not-allowed}
 
-  .obs-area{padding:0 16px 14px;display:none}
-  .obs-area.aberta{display:block}
-  .obs-area label{font-size:12px;font-weight:600;color:#ef4444;margin-bottom:4px}
-  .obs-area textarea{width:100%;padding:8px 10px;border:1px solid #fca5a5;border-radius:8px;font-size:13px;font-family:inherit;resize:none;height:72px;outline:none;margin-bottom:0}
-  .obs-area textarea:focus{border-color:#ef4444}
-  .btn-salvar-obs{margin-top:8px;background:#0f172a;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.toast.erro{background:#dc2626}
+.toast.ok{background:#16a34a}
 
-  .status-pill{font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;white-space:nowrap}
-  .pill-dev{background:#dcfce7;color:#166534}
-  .pill-nao{background:#fee2e2;color:#991b1b}
-  .pill-pend{background:#f1f5f9;color:#64748b}
-
-  .tbl-entregas{border-collapse:collapse;width:100%;font-size:13px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px #00000008}
-  .tbl-entregas th{text-align:left;background:#f8fafc;border-bottom:2px solid #e2e8f0;padding:9px 12px;font-size:11.5px;font-weight:600;color:#64748b}
-  .tbl-entregas td{padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
-  .tbl-entregas tr.tr-dev td{background:#f0fdf4}
-  .tbl-entregas tr.tr-nao td{background:#fff5f5}
-  .tbl-entregas tr:hover td{background:#fafafa}
-  .tbl-entregas tr.tr-dev:hover td{background:#dcfce7}
-  .tbl-entregas tr.tr-nao:hover td{background:#fee2e2}
-  .vazio{text-align:center;padding:40px 20px;color:#94a3b8;font-size:14px}
-  .loading{text-align:center;padding:40px;color:#94a3b8}
-
-  /* RESUMO */
-  .resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-  .resumo-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center}
-  .resumo-num{font-size:24px;font-weight:800;line-height:1}
-  .resumo-label{font-size:11px;color:#64748b;margin-top:4px}
-  .num-verde{color:#16a34a}
-  .num-vermelha{color:#ef4444}
-  .num-cinza{color:#64748b}
+/* HISTÓRICO */
+.hist-title{font-size:13px;font-weight:700;color:#64748b;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.hist-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9}
+.hist-item:last-child{border-bottom:none}
+.hist-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;background:#f1f5f9;flex-shrink:0}
+.hist-info{flex:1;min-width:0}
+.hist-sa{font-size:13px;font-weight:600;color:#0f172a}
+.hist-mat{font-size:12px;color:#64748b}
+.hist-filial{font-size:11px;color:#94a3b8}
+.hist-hora{font-size:11px;color:#94a3b8;flex-shrink:0}
+.vazio-hist{text-align:center;padding:20px;color:#94a3b8;font-size:13px}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div class="login-wrap" id="tela-login">
-  <div class="login-card">
-    <div class="login-logo">
-      <div class="ico">A</div>
-      <div>
-        <div class="txt">Almoxarifado</div>
-        <div class="sub">Controle de devoluções</div>
-      </div>
-    </div>
-    <h2>Entrar</h2>
-    <p>Acesse com seu e-mail e senha cadastrados.</p>
-    <div id="login-msg"></div>
-    <label>E-mail</label>
-    <input type="email" id="email" placeholder="seu@email.com">
-    <label>Senha</label>
-    <input type="password" id="senha" placeholder="••••••••">
-    <button class="btn" id="btn-login">Entrar</button>
+<div class="header">
+  <div class="header-ico">A</div>
+  <div>
+    <div class="header-title">Coletor de Devoluções</div>
+    <div class="header-sub" id="header-sub">Almoxarifado</div>
   </div>
 </div>
 
-<!-- SELEÇÃO DE FILIAL -->
-<div class="login-wrap" id="tela-filial" style="display:none">
-  <div class="login-card">
-    <div class="login-logo">
-      <div class="ico">A</div>
-      <div>
-        <div class="txt">Almoxarifado</div>
-        <div class="sub">Controle de devoluções</div>
-      </div>
-    </div>
-    <h2>Qual é sua filial?</h2>
-    <p>Selecione a filial que você gerencia.</p>
-    <label>Filial</label>
-    <select id="select-filial" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:9px;font-size:14px;font-family:inherit;margin-bottom:14px;outline:none">
-      <option value="">Selecione...</option>
+<div class="corpo">
+
+  <!-- FILIAL -->
+  <div class="card">
+    <label class="filial-label">Filial</label>
+    <select id="sel-filial">
+      <option value="">Selecione a filial...</option>
       <option value="01">01 — MATRIZ</option>
       <option value="03">03 — PAU DOS FERROS</option>
       <option value="04">04 — ITAPIPOCA</option>
@@ -162,273 +110,196 @@
       <option value="42">42 — LIVRAMENTO DE NOSSA SENHORA</option>
       <option value="43">43 — HORTOLANDIA</option>
     </select>
-    <button class="btn" id="btn-filial">Continuar</button>
   </div>
+
+  <!-- FOTO -->
+  <div class="card">
+    <label class="campo-label">Foto do item devolvido</label>
+    <div class="foto-area" id="foto-area" onclick="abrirCamera()">
+      <div class="foto-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        <span>Toque para fotografar</span>
+      </div>
+      <img class="foto-preview" id="foto-preview" alt="Foto do item">
+      <button class="btn-retake" id="btn-retake" style="display:none" onclick="trocarFoto(event)">Trocar foto</button>
+    </div>
+    <input type="file" id="input-foto" accept="image/*" capture="environment">
+  </div>
+
+  <!-- MATRÍCULA E SA -->
+  <div class="card" style="display:flex;flex-direction:column;gap:14px">
+    <div>
+      <label class="campo-label">Matrícula do funcionário</label>
+      <input type="text" id="inp-matricula" placeholder="Ex: 00123" inputmode="numeric">
+    </div>
+    <div>
+      <label class="campo-label">Número da SA</label>
+      <input type="text" id="inp-sa" placeholder="Ex: 000123">
+    </div>
+  </div>
+
+  <!-- BOTÃO -->
+  <button class="btn-salvar" id="btn-salvar" onclick="salvar()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+    Registrar devolução
+  </button>
+
+  <!-- HISTÓRICO -->
+  <div class="card">
+    <div class="hist-title">
+      <span>Registros de hoje</span>
+      <span id="hist-count" style="font-size:12px;background:#f1f5f9;padding:2px 8px;border-radius:6px;color:#0f172a">0</span>
+    </div>
+    <div id="historico"><div class="vazio-hist">Nenhum registro ainda</div></div>
+  </div>
+
 </div>
 
-<!-- APP -->
-<div id="app">
-  <div class="header">
-    <div class="header-left">
-      <div class="header-ico">A</div>
-      <div>
-        <div class="header-title">Entregas do Dia</div>
-        <div class="header-sub" id="header-sub">Almoxarifado</div>
-      </div>
-    </div>
-    <button class="btn-sair" id="btn-sair">Sair</button>
-  </div>
-
-  <div class="filtros">
-    <input type="date" id="filtro-data">
-    <input type="text" id="filtro-busca" placeholder="🔍 Buscar por item ou funcionário...">
-    <div class="badge-count" id="badge-count"></div>
-  </div>
-
-  <div class="corpo">
-    <div class="resumo">
-      <div class="resumo-card">
-        <div class="resumo-num num-verde" id="count-dev">—</div>
-        <div class="resumo-label">Devolvidos</div>
-      </div>
-      <div class="resumo-card">
-        <div class="resumo-num num-vermelha" id="count-nao">—</div>
-        <div class="resumo-label">Não devolvidos</div>
-      </div>
-      <div class="resumo-card">
-        <div class="resumo-num num-cinza" id="count-pend">—</div>
-        <div class="resumo-label">Pendentes</div>
-      </div>
-    </div>
-    <div id="lista"><div class="loading">Carregando...</div></div>
-  </div>
-</div>
+<div class="toast" id="toast"></div>
 
 <script>
 const SUPABASE_URL = 'https://vvwtqbehfwrgcmbjdniu.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2d3RxYmVoZndyZ2NtYmpkbml1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mjg3NTcsImV4cCI6MjA5NzEwNDc1N30.jHxva16Nae109RiWDlgl21saOJ6gBihstMmlKRRBXis';
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let userEmail = '';
-let userFilial = '';
-let todasEntregas = [];
+let fotoBlob = null;
+let registrosHoje = [];
 
-// ── LOGIN ─────────────────────────────────────────────────────────────────────
-document.getElementById('btn-login').addEventListener('click', async () => {
-  const email = document.getElementById('email').value.trim();
-  const senha = document.getElementById('senha').value;
-  const msgEl = document.getElementById('login-msg');
-  msgEl.innerHTML = '';
-  if (!email || !senha) { msgEl.innerHTML = '<div class="msg erro">Preencha e-mail e senha.</div>'; return; }
-  document.getElementById('btn-login').textContent = 'Entrando...';
-  const { error } = await db.auth.signInWithPassword({ email, password: senha });
-  document.getElementById('btn-login').textContent = 'Entrar';
-  if (error) { msgEl.innerHTML = '<div class="msg erro">E-mail ou senha inválidos.</div>'; return; }
-  iniciarApp(email);
+// Recuperar filial do localStorage
+const filialSalva = localStorage.getItem('devolucao_filial');
+if (filialSalva) document.getElementById('sel-filial').value = filialSalva;
+
+document.getElementById('sel-filial').addEventListener('change', e => {
+  localStorage.setItem('devolucao_filial', e.target.value);
 });
 
-document.getElementById('senha').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('btn-login').click();
+document.getElementById('input-foto').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  fotoBlob = file;
+  const url = URL.createObjectURL(file);
+  document.getElementById('foto-preview').src = url;
+  document.getElementById('foto-area').classList.add('tem-foto');
+  document.getElementById('btn-retake').style.display = 'block';
+  e.target.value = '';
 });
 
-document.getElementById('btn-sair').addEventListener('click', async () => {
-  await db.auth.signOut();
-  location.reload();
-});
-
-async function verificarSessao() {
-  const { data } = await db.auth.getSession();
-  if (data.session) iniciarApp(data.session.user.email);
+function abrirCamera() {
+  document.getElementById('input-foto').click();
 }
 
-async function iniciarApp(email) {
-  userEmail = email;
-  document.getElementById('tela-login').style.display = 'none';
-  // Verificar se já tem filial salva na sessão
-  document.getElementById('tela-filial').style.display = 'flex';
+function trocarFoto(e) {
+  e.stopPropagation();
+  document.getElementById('input-foto').click();
 }
 
-document.getElementById('btn-filial').addEventListener('click', () => {
-  const sel = document.getElementById('select-filial').value;
-  if (!sel) { alert('Selecione uma filial.'); return; }
-  userFilial = sel;
-  document.getElementById('tela-filial').style.display = 'none';
-  abrirApp();
-});
-
-const FILIAIS_NOMES = {'01':'MATRIZ','03':'PAU DOS FERROS','04':'ITAPIPOCA','06':'CURRAIS NOVOS','07':'SOBRAL','08':'APARECIDA DE GOIANIA','09':'MARACANAU','10':'MOSSORO','11':'ANAPOLIS','13':'ALAGOINHAS','14':'RIBEIRA DO POMBAL','15':'PAULO AFONSO','22':'GOIANIA','23':'BATURITE','24':'MORRINHOS','25':'CASCAVEL','27':'CAUCAIA','29':'HORIZONTE','34':'SENHOR DO BONFIM','36':'LUZIANIA','37':'DIVINOPOLIS','40':'GARANHUNS','41':'FLORIANO','42':'LIVRAMENTO DE NOSSA SENHORA','43':'HORTOLANDIA'};
-
-async function abrirApp() {
-  document.getElementById('app').style.display = 'block';
-  const filialNome = FILIAIS_NOMES[userFilial] || ('Filial ' + userFilial);
-  document.getElementById('header-sub').textContent = userEmail + ' · ' + filialNome;
-
-  // Data padrão = hoje
-  const hoje = new Date().toISOString().slice(0, 10);
-  document.getElementById('filtro-data').value = hoje;
-
-  await carregarEntregas();
-
-  document.getElementById('filtro-data').addEventListener('change', carregarEntregas);
-  document.getElementById('filtro-busca').addEventListener('input', filtrarLista);
+function toast(msg, tipo = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + tipo;
+  setTimeout(() => el.className = 'toast', 2500);
 }
 
-async function carregarEntregas() {
-  document.getElementById('lista').innerHTML = '<div class="loading">Carregando...</div>';
-  const dataEl = document.getElementById('filtro-data').value;
-  const dataProtheus = dataEl.replace(/-/g, '');
+async function salvar() {
+  const filial = document.getElementById('sel-filial').value;
+  const matricula = document.getElementById('inp-matricula').value.trim();
+  const sa = document.getElementById('inp-sa').value.trim();
 
-  const filialBusca = userFilial ? userFilial.padStart(2, '0') : '';
-  console.log('[debug] data:', dataProtheus, 'filial:', filialBusca);
-  let query = db.from('entregas_almoxarife')
-    .select('*')
-    .eq('emissao', dataProtheus)
-    .order('hora', { ascending: false });
+  if (!filial) { toast('Selecione a filial', 'erro'); return; }
+  if (!fotoBlob) { toast('Tire uma foto do item', 'erro'); return; }
+  if (!matricula) { toast('Informe a matrícula', 'erro'); return; }
+  if (!sa) { toast('Informe o número da SA', 'erro'); return; }
 
-  if (filialBusca) query = query.eq('filial', filialBusca);
+  const btn = document.getElementById('btn-salvar');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Salvando...';
 
-  const { data, error } = await query;
-  console.log('[debug] resultado:', data?.length, 'erro:', error?.message);
-  if (error) { 
-    document.getElementById('lista').innerHTML = '<div class="vazio">Erro: ' + error.message + '</div>'; 
-    return; 
+  try {
+    // 1. Upload da foto
+    const ext = fotoBlob.name?.split('.').pop() || 'jpg';
+    const nomeArquivo = filial + '_' + matricula + '_' + sa + '_' + Date.now() + '.' + ext;
+    const { error: uploadErr } = await db.storage
+      .from('fotos-devolucoes')
+      .upload(nomeArquivo, fotoBlob, { contentType: fotoBlob.type || 'image/jpeg' });
+
+    if (uploadErr) throw uploadErr;
+
+    // 2. URL pública
+    const { data: urlData } = db.storage.from('fotos-devolucoes').getPublicUrl(nomeArquivo);
+    const fotoUrl = urlData.publicUrl;
+
+    // 3. Inserir no banco
+    const { error: insertErr } = await db.from('devolucoes').insert({
+      filial,
+      matricula,
+      sa,
+      foto_url: fotoUrl
+    });
+
+    if (insertErr) throw insertErr;
+
+    toast('Devolução registrada!', 'ok');
+
+    // Adicionar ao histórico local
+    registrosHoje.unshift({ filial, matricula, sa, foto_url: fotoUrl, criado_em: new Date().toISOString() });
+    renderHistorico();
+
+    // Limpar campos (manter filial)
+    fotoBlob = null;
+    document.getElementById('foto-preview').src = '';
+    document.getElementById('foto-area').classList.remove('tem-foto');
+    document.getElementById('btn-retake').style.display = 'none';
+    document.getElementById('inp-matricula').value = '';
+    document.getElementById('inp-sa').value = '';
+
+  } catch (err) {
+    console.error(err);
+    toast('Erro ao salvar: ' + (err.message || 'tente novamente'), 'erro');
   }
 
-  todasEntregas = data || [];
-  filtrarLista();
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg> Registrar devolução';
 }
 
-function filtrarLista() {
-  const busca = (document.getElementById('filtro-busca').value || '').toLowerCase();
-  const visiveis = busca
-    ? todasEntregas.filter(e =>
-        (e.descricao || '').toLowerCase().includes(busca) ||
-        (e.solicitante || '').toLowerCase().includes(busca) ||
-        (e.matricula || '').includes(busca) ||
-        (e.produto || '').includes(busca)
-      )
-    : todasEntregas;
-  renderLista(visiveis);
+function fmtHora(iso) {
+  const d = new Date(iso);
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
 }
 
-function fmtData(str) {
-  if (!str || str.length < 8) return str;
-  return str.slice(6,8) + '/' + str.slice(4,6) + '/' + str.slice(0,4);
-}
-
-function renderLista(entregas) {
-  const dev = entregas.filter(e => e.status === 'devolvido').length;
-  const nao = entregas.filter(e => e.status === 'nao_devolvido').length;
-  const pend = entregas.filter(e => e.status === 'pendente').length;
-
-  document.getElementById('count-dev').textContent = dev;
-  document.getElementById('count-nao').textContent = nao;
-  document.getElementById('count-pend').textContent = pend;
-  document.getElementById('badge-count').innerHTML = '<b>' + entregas.length + '</b> entrega(s)';
-
-  if (!entregas.length) {
-    document.getElementById('lista').innerHTML = '<div class="vazio">Nenhuma entrega encontrada para esta data.</div>';
+function renderHistorico() {
+  const el = document.getElementById('historico');
+  document.getElementById('hist-count').textContent = registrosHoje.length;
+  if (!registrosHoje.length) {
+    el.innerHTML = '<div class="vazio-hist">Nenhum registro ainda</div>';
     return;
   }
-
-  // Tabela
-  let html = '<table class="tbl-entregas"><thead><tr>'
-    + '<th>Hora</th><th>Matrícula</th><th>Nº SA</th><th>Item</th>'
-    + '<th style="text-align:center">Qtd</th><th>CC</th>'
-    + '<th style="text-align:center">Status</th>'
-    + '<th style="text-align:center">Ação</th>'
-    + '</tr></thead><tbody>';
-
-  entregas.forEach(e => {
-    const st = e.status || 'pendente';
-    const trClass = st === 'devolvido' ? 'tr-dev' : st === 'nao_devolvido' ? 'tr-nao' : '';
-    const pillHtml = st === 'devolvido'
-      ? '<span class="status-pill pill-dev">✓ Dev.</span>'
-      : st === 'nao_devolvido'
-      ? '<span class="status-pill pill-nao">✗ Não dev.</span>'
-      : '<span class="status-pill pill-pend">Pendente</span>';
-
-    html += '<tr class="' + trClass + '" id="card-' + e.id + '">'
-      + '<td style="white-space:nowrap;color:#64748b;font-size:12px">' + String(e.hora||'—').slice(0,5) + '</td>'
-      + '<td style="font-family:ui-monospace,monospace;font-size:12px">' + (e.matricula||'—') + '</td>'
-      + '<td style="font-size:13px">' + (e.sa||e.numero_sa||e.num_sa||'—') + '</td>'
-      + '<td><div style="font-size:13px;font-weight:500">' + (e.descricao||e.produto) + '</div>'
-      + (e.observacao ? '<div style="font-size:11px;color:#ef4444;font-style:italic">Obs: ' + e.observacao + '</div>' : '')
-      + '</td>'
-      + '<td style="text-align:center;font-family:ui-monospace,monospace;font-weight:700">' + (e.quantidade||0) + '</td>'
-      + '<td style="font-size:11px;color:#64748b">' + (e.cc||'—') + '</td>'
-      + '<td style="text-align:center">' + pillHtml + '</td>'
-      + '<td style="text-align:center;white-space:nowrap">'
-      + '<button class="btn-dev btn-sim ' + (st==='devolvido'?'ativo':'') + '" onclick="marcar(' + e.id + ', \'devolvido\')" title="Devolvido">✓</button> '
-      + '<button class="btn-dev btn-nao ' + (st==='nao_devolvido'?'ativo':'') + '" onclick="abrirObs(' + e.id + ')" title="Não devolvido">✗</button>'
-      + '</td>'
-      + '</tr>';
-
-    if (st === 'nao_devolvido' || e._obsAberta) {
-      html += '<tr id="obs-row-' + e.id + '"><td colspan="8" style="padding:0 12px 12px">'
-        + '<div style="background:#fff5f5;border-radius:8px;padding:10px;display:flex;gap:8px;align-items:flex-end">'
-        + '<div style="flex:1"><label style="font-size:11px;font-weight:600;color:#ef4444;display:block;margin-bottom:4px">⚠ Motivo da não devolução</label>'
-        + '<textarea id="txt-' + e.id + '" style="width:100%;padding:7px 10px;border:1px solid #fca5a5;border-radius:7px;font-size:13px;font-family:inherit;resize:none;height:60px;outline:none">' + (e.observacao||'') + '</textarea></div>'
-        + '<button class="btn-salvar-obs" onclick="marcarNao(' + e.id + ')">Salvar</button>'
-        + '</div></td></tr>';
-    }
-  });
-
-  html += '</tbody></table>';
-  document.getElementById('lista').innerHTML = html;
+  el.innerHTML = registrosHoje.map(r => `
+    <div class="hist-item">
+      <img class="hist-thumb" src="${r.foto_url}" alt="foto">
+      <div class="hist-info">
+        <div class="hist-sa">SA: ${r.sa}</div>
+        <div class="hist-mat">Mat: ${r.matricula}</div>
+        <div class="hist-filial">Filial ${r.filial}</div>
+      </div>
+      <div class="hist-hora">${fmtHora(r.criado_em)}</div>
+    </div>
+  `).join('');
 }
 
-async function marcar(id, status) {
-  await db.from('entregas_almoxarife').update({
-    status,
-    observacao: null,
-    respondido_em: new Date().toISOString()
-  }).eq('id', id);
-
-  const idx = todasEntregas.findIndex(e => e.id === id);
-  if (idx >= 0) { todasEntregas[idx].status = status; todasEntregas[idx].observacao = null; }
-  filtrarLista();
+// Carregar registros de hoje ao abrir
+async function carregarHoje() {
+  const hoje = new Date().toISOString().slice(0, 10);
+  const { data } = await db.from('devolucoes')
+    .select('*')
+    .gte('criado_em', hoje + 'T00:00:00')
+    .order('criado_em', { ascending: false });
+  if (data) { registrosHoje = data; renderHistorico(); }
 }
 
-function abrirObs(id) {
-  // Renderizar linha de obs se não existir
-  let obsRow = document.getElementById('obs-row-' + id);
-  if (!obsRow) {
-    const row = document.getElementById('card-' + id);
-    if (!row) return;
-    const tr = document.createElement('tr');
-    tr.id = 'obs-row-' + id;
-    tr.innerHTML = '<td colspan="8" style="padding:0 12px 12px">'
-      + '<div style="background:#fff5f5;border-radius:8px;padding:10px;display:flex;gap:8px;align-items:flex-end">'
-      + '<div style="flex:1"><label style="font-size:11px;font-weight:600;color:#ef4444;display:block;margin-bottom:4px">⚠ Motivo da não devolução</label>'
-      + '<textarea id="txt-' + id + '" style="width:100%;padding:7px 10px;border:1px solid #fca5a5;border-radius:7px;font-size:13px;font-family:inherit;resize:none;height:60px;outline:none" placeholder="Ex.: item danificado, ainda em uso, perdido..."></textarea></div>'
-      + '<button class="btn-salvar-obs" onclick="marcarNao(' + id + ')">Salvar</button>'
-      + '</div></td>';
-    row.insertAdjacentElement('afterend', tr);
-    obsRow = tr;
-  }
-  obsRow.style.display = '';
-  document.getElementById('txt-' + id)?.focus();
-}
-
-async function marcarNao(id) {
-  const obs = (document.getElementById('txt-' + id)?.value || '').trim();
-  if (!obs) { alert('Informe o motivo da não devolução.'); return; }
-  await db.from('entregas_almoxarife').update({
-    status: 'nao_devolvido',
-    observacao: obs,
-    respondido_em: new Date().toISOString()
-  }).eq('id', id);
-  const idx = todasEntregas.findIndex(e => e.id === id);
-  if (idx >= 0) { todasEntregas[idx].status = 'nao_devolvido'; todasEntregas[idx].observacao = obs; }
-  filtrarLista();
-}
-
-window.marcar = marcar;
-window.abrirObs = abrirObs;
-window.marcarNao = marcarNao;
-
-verificarSessao();
+carregarHoje();
 </script>
 </body>
 </html>
