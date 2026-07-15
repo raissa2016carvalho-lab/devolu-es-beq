@@ -87,6 +87,16 @@ input[type=file]{display:none}
 
 .tag-consumo{background:#fef3c7;color:#92400e;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px}
 .tag-fotos{background:#dcfce7;color:#166534;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px}
+
+/* SLOT NÃO DEVOLVIDO */
+.foto-slot.nao-devolvido{border:2px solid #ef4444;background:#fff5f5;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
+.foto-slot.nao-devolvido span{font-size:10px;color:#ef4444;font-weight:600;text-align:center;padding:0 4px}
+.btn-tipo{flex:1;padding:8px 6px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;background:#fff;color:#64748b;transition:all .15s;text-align:center}
+.btn-tipo.ativo-foto{background:#dcfce7;border-color:#16a34a;color:#166534}
+.btn-tipo.ativo-nao{background:#fee2e2;border-color:#ef4444;color:#991b1b}
+.obs-nao{background:#fff5f5;border:1px solid #fca5a5;border-radius:9px;padding:10px 12px;margin-top:6px}
+.obs-nao textarea{width:100%;border:none;background:transparent;font-size:13px;font-family:inherit;resize:none;outline:none;color:#0f172a;height:60px}
+.obs-nao textarea::placeholder{color:#fca5a5}
 </style>
 </head>
 <body>
@@ -142,7 +152,7 @@ input[type=file]{display:none}
       </div>
       <div>
         <label class="campo-label">Número da SA</label>
-        <input type="text" id="inp-sa" placeholder="Ex: 123456">
+        <input type="text" id="inp-sa" placeholder="Ex: 123456 ou SA0001" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" oninput="this.value=this.value.toUpperCase()">
       </div>
     </div>
 
@@ -198,8 +208,16 @@ input[type=file]{display:none}
       </div>
     </div>
 
+    <div class="card" id="card-nao-devolvidos" style="display:none">
+      <label class="campo-label" style="margin-bottom:10px;color:#ef4444">Itens não devolvidos — informe o motivo</label>
+      <div id="lista-nao-devolvidos" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
     <div class="card">
-      <label class="campo-label" style="margin-bottom:10px">Fotos dos itens devolvidos</label>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <label class="campo-label" style="margin-bottom:0">Fotos dos itens devolvidos</label>
+        <button onclick="adicionarNaoDevolvido()" style="background:#fee2e2;color:#991b1b;border:none;border-radius:7px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">+ Não devolvido</button>
+      </div>
       <div class="fotos-grid" id="fotos-grid"></div>
     </div>
 
@@ -230,6 +248,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let fotosColetadas = []; // [{blob, url}]
+let naoDevolvidos = []; // [{obs}]
 let totalFotos = 0;
 let slotAtivo = null;
 let registrosHoje = [];
@@ -276,6 +295,7 @@ function irParaFotos() {
 
   totalFotos = total - consumo;
   fotosColetadas = new Array(totalFotos).fill(null);
+  naoDevolvidos = [];
 
   document.getElementById('etapa-1').classList.remove('ativa');
   document.getElementById('etapa-2').classList.add('ativa');
@@ -291,6 +311,7 @@ function voltarEtapa1() {
   document.getElementById('etapa-2').classList.remove('ativa');
   document.getElementById('etapa-1').classList.add('ativa');
   fotosColetadas = [];
+  naoDevolvidos = [];
 }
 
 function renderGaleria() {
@@ -315,20 +336,30 @@ function renderGaleria() {
 
 function atualizarProgresso() {
   const feitas = fotosColetadas.filter(Boolean).length;
-  const pct = totalFotos > 0 ? Math.round(feitas / totalFotos * 100) : 0;
-  const restantes = totalFotos - feitas;
+  const naoDevOk = naoDevolvidos.filter(n => n.obs.trim()).length;
+  const naoDevPendente = naoDevolvidos.filter(n => !n.obs.trim()).length;
+  const concluidos = feitas + naoDevOk;
+  const pct = totalFotos > 0 ? Math.round(concluidos / totalFotos * 100) : 0;
+  const restantes = totalFotos - concluidos;
 
-  document.getElementById('prog-texto').textContent = feitas + ' de ' + totalFotos + ' foto' + (totalFotos !== 1 ? 's' : '');
+  document.getElementById('prog-texto').textContent = concluidos + ' de ' + totalFotos + ' item' + (totalFotos !== 1 ? 'ns' : '');
   document.getElementById('prog-pct').textContent = pct + '%';
-  document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('contador-num').textContent = restantes;
+  document.getElementById('prog-fill').style.width = Math.min(100, pct) + '%';
+  document.getElementById('contador-num').textContent = Math.max(0, restantes);
 
-  if (restantes === 0) {
+  const tudo = restantes <= 0 && naoDevPendente === 0;
+  if (tudo) {
     document.getElementById('contador-wrap').style.background = '#f0fdf4';
     document.getElementById('contador-wrap').style.borderColor = '#bbf7d0';
     document.getElementById('contador-num').style.color = '#16a34a';
-    document.getElementById('contador-sub').textContent = 'Todas as fotos registradas! ✓';
+    document.getElementById('contador-sub').textContent = 'Todos os itens registrados! ✓';
     document.getElementById('btn-salvar').disabled = false;
+  } else if (naoDevPendente > 0) {
+    document.getElementById('contador-wrap').style.background = '#fff5f5';
+    document.getElementById('contador-wrap').style.borderColor = '#fca5a5';
+    document.getElementById('contador-num').style.color = '#ef4444';
+    document.getElementById('contador-sub').textContent = naoDevPendente + ' item(ns) sem motivo informado';
+    document.getElementById('btn-salvar').disabled = true;
   } else {
     document.getElementById('contador-wrap').style.background = '#f0f9ff';
     document.getElementById('contador-wrap').style.borderColor = '#bae6fd';
@@ -336,6 +367,34 @@ function atualizarProgresso() {
     document.getElementById('contador-sub').textContent = 'Toque em um slot azul para fotografar';
     document.getElementById('btn-salvar').disabled = true;
   }
+}
+
+function adicionarNaoDevolvido() {
+  naoDevolvidos.push({ obs: '' });
+  renderNaoDevolvidos();
+  atualizarProgresso();
+}
+
+function removerNaoDevolvido(idx) {
+  naoDevolvidos.splice(idx, 1);
+  renderNaoDevolvidos();
+  atualizarProgresso();
+}
+
+function renderNaoDevolvidos() {
+  const card = document.getElementById('card-nao-devolvidos');
+  const lista = document.getElementById('lista-nao-devolvidos');
+  if (!naoDevolvidos.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  lista.innerHTML = naoDevolvidos.map((n, i) => `
+    <div style="background:#fff5f5;border:1px solid #fca5a5;border-radius:9px;padding:10px 12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:12px;font-weight:700;color:#ef4444">Item não devolvido ${i+1}</span>
+        <button onclick="removerNaoDevolvido(${i})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;font-weight:700">✕</button>
+      </div>
+      <textarea id="obs-nao-${i}" placeholder="Informe o motivo (perdido, danificado, ainda em uso...)" oninput="naoDevolvidos[${i}].obs=this.value;atualizarProgresso()" style="width:100%;border:none;background:transparent;font-size:13px;font-family:inherit;resize:none;outline:none;color:#0f172a;height:56px">${n.obs}</textarea>
+    </div>
+  `).join('');
 }
 
 function abrirCameraSlot(idx) {
@@ -398,10 +457,24 @@ async function salvar() {
       });
     }
 
+    // Adicionar itens não devolvidos (sem foto)
+    naoDevolvidos.forEach((n, i) => {
+      registros.push({
+        filial, matricula, sa,
+        foto_url: null,
+        total_itens: total,
+        itens_consumo: consumo,
+        num_item: fotosColetadas.length + i + 1,
+        nao_devolvido: true,
+        observacao: n.obs
+      });
+    });
+
     const { error: insErr } = await db.from('devolucoes').insert(registros);
     if (insErr) throw insErr;
 
-    toast('SA ' + sa + ' registrada com ' + fotosColetadas.length + ' foto(s)!', 'ok');
+    const msg = fotosColetadas.length + ' foto(s)' + (naoDevolvidos.length ? ' · ' + naoDevolvidos.length + ' não devolvido(s)' : '');
+    toast('SA ' + sa + ' registrada! ' + msg, 'ok');
 
     // Adicionar ao histórico
     registrosHoje.unshift({
@@ -413,11 +486,14 @@ async function salvar() {
 
     // Limpar e voltar
     fotosColetadas = [];
+    naoDevolvidos = [];
     document.getElementById('inp-matricula').value = '';
     document.getElementById('inp-sa').value = '';
     document.getElementById('inp-total').value = '';
     document.getElementById('inp-consumo').value = '';
     document.getElementById('preview-calculo').style.display = 'none';
+    document.getElementById('card-nao-devolvidos').style.display = 'none';
+    document.getElementById('lista-nao-devolvidos').innerHTML = '';
     document.getElementById('etapa-2').classList.remove('ativa');
     document.getElementById('etapa-1').classList.add('ativa');
 
